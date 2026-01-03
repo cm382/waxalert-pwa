@@ -1,4 +1,4 @@
-const CACHE = "waxalert-v5"; // bump when you deploy
+const CACHE = "waxalert-v5";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -17,7 +17,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // ✅ Never try to cache non-GET requests (POST/PUT/etc.)
+  // ✅ Never cache POST/PUT/etc. (fixes your exact error)
   if (req.method !== "GET") {
     event.respondWith(fetch(req));
     return;
@@ -25,20 +25,19 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // ✅ Never cache Apps Script API calls (optional but recommended)
-  // This prevents stale JSON and weird behavior.
+  // ✅ Don't cache Apps Script responses
   if (url.hostname === "script.google.com") {
     event.respondWith(fetch(req));
     return;
   }
 
-  // Cache-first for app shell + static assets
+  // Cache-first for the app shell / icons
   if (APP_SHELL.includes(url.pathname) || url.pathname.startsWith("/icons/")) {
-    event.respondWith(caches.match(req).then((r) => r || fetch(req)));
+    event.respondWith(caches.match(req).then(r => r || fetch(req)));
     return;
   }
 
-  // Network-first for everything else, fallback to cache
+  // Network-first for everything else
   event.respondWith(
     fetch(req)
       .then((res) => {
