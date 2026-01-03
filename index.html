@@ -82,6 +82,17 @@
   </nav>
 
   <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyK9zQ1Q_kmZ_cpDWqdmxvOGjWhALwLfN74JDPZKcj-qkkJaTv6LIAaDNCabrRT00rg/exec";
+
+async function api(action, payload) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action, payload })
+  });
+  return await res.json();
+}
+
     // PWA service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
@@ -97,15 +108,68 @@
     }
     buttons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.target)));
 
-    // Placeholder “search” UI (we’ll replace with Apps Script calls)
-    const resultsEl = document.getElementById('results');
-    document.getElementById('btnSearch').addEventListener('click', () => {
-      const q = document.getElementById('q').value.trim();
-      resultsEl.innerHTML = q ? `
-        <div class="card"><b>Example result</b><div class="muted">${q}</div></div>
-        <div class="card"><b>Next step</b><div class="muted">Connect this to Apps Script + Sheets API.</div></div>
-      ` : '';
-    });
+   const resultsEl = document.getElementById('results');
+
+function cardHTML(r) {
+  return `
+    <div class="card">
+      <div style="font-weight:700;">${escapeHTML(r.title)}</div>
+      <div class="muted" style="margin-top:6px;">$${Number(r.price).toFixed(2)}</div>
+      <button class="primary" style="margin-top:10px;" data-save='${escapeHTML(JSON.stringify(r))}'>Save</button>
+    </div>
+  `;
+}
+
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function getUserKey() {
+  // Simple, free “device key” (not secure, but good for v1)
+  let k = localStorage.getItem("waxalert_userKey");
+  if (!k) {
+    k = "u_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+    localStorage.setItem("waxalert_userKey", k);
+  }
+  return k;
+}
+
+document.getElementById('btnSearch').addEventListener('click', async () => {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+
+  resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
+
+  const data = await api("search", { q, userKey: getUserKey() });
+
+  if (!data.ok) {
+    resultsEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML(data.error || "Unknown error")}</div></div>`;
+    return;
+  }
+
+  resultsEl.innerHTML = (data.results || []).map(cardHTML).join("") || `<div class="card"><div class="muted">No results.</div></div>`;
+});
+
+// Save handler (event delegation)
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-save]");
+  if (!btn) return;
+
+  const item = JSON.parse(btn.getAttribute("data-save"));
+  const q = document.getElementById('q').value.trim();
+
+  btn.textContent = "Saving…";
+  btn.disabled = true;
+
+  const resp = await api("save", {
+    userKey: getUserKey(),
+    query: q,
+    productId: item.productId,
+    title: item.title,
+    sourceUrl: item.sourceUrl || ""
+  });
+
+  btn.textContent = resp.ok ? "Saved ✓" : "Save failed";
+});
+
   </script>
 </body>
 </html>
