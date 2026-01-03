@@ -1,4 +1,4 @@
-const CACHE = "waxalert-v1";
+const CACHE = "waxalert-v3";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
