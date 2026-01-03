@@ -73,6 +73,11 @@
 
     .list { margin-top: 12px; display: grid; gap: 10px; }
 
+    /* Suggestions */
+    .suggestion { cursor: pointer; }
+    .suggestion .title { font-weight: 700; }
+    .suggestion .meta { opacity: 0.8; font-size: 12px; margin-top: 4px; }
+
     /* Bottom nav */
     .bottomNav {
       position: fixed;
@@ -133,16 +138,21 @@
           <div class="small" id="buildTag"></div>
         </div>
         <div class="muted">
-          iPhone install: open in Safari → Share → Add to Home Screen.
+          Start typing. Tap a match to use the exact Products eBayURL (best results).
         </div>
         <div class="spacer"></div>
 
-        <input id="q" placeholder="Search sealed wax (example: 2025-26 Topps Chrome Basketball Hobby)" />
+        <input id="q" placeholder="Type: dune chrome hobby, topps chrome hobby, etc." />
+
+        <!-- typeahead results -->
+        <div class="list" id="suggestions"></div>
+
         <button class="primary" id="btnSearch">Search</button>
         <button class="ghost" id="btnLast">Use last query</button>
 
         <div class="spacer"></div>
         <div class="small" id="lastQuery"></div>
+        <div class="small" id="selectedProduct"></div>
       </div>
 
       <div class="list" id="results"></div>
@@ -153,7 +163,7 @@
       <div class="card">
         <h2>Prices</h2>
         <div class="muted">
-          Next: turn Export rows into structured “Avg Sold / Count / Low / High” cards, and add product picker.
+          Next: map Export rows into a cleaner “Avg / Count / Low / High” layout.
         </div>
       </div>
     </section>
@@ -163,7 +173,7 @@
       <div class="card">
         <h2>Alerts</h2>
         <div class="muted">
-          Later: “Notify me when under $X” (would write to a Sheets tab and run a timed Apps Script trigger).
+          Later: track + notify when under $X (Sheets + Apps Script trigger).
         </div>
       </div>
     </section>
@@ -173,7 +183,7 @@
       <div class="card">
         <h2>Export Debug</h2>
         <div class="muted">
-          This pulls the current Export!A1:B20 so you can verify your sheet is updating from the app.
+          Pulls current Export!A1:B20 without running a new search.
         </div>
         <button class="primary" id="btnExport">Refresh Export</button>
       </div>
@@ -192,9 +202,8 @@
     // ---------------- CONFIG ----------------
     const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
 
-    // Change this string any time you deploy so you can confirm you're seeing the latest build
-    const APP_VERSION = "2026-01-03-02";
-
+    // bump this any time you deploy so you can confirm you're seeing the latest build
+    const APP_VERSION = "2026-01-03-03";
     document.getElementById("buildTag").textContent = "v" + APP_VERSION;
 
     // ---------------- PWA SERVICE WORKER ----------------
@@ -219,6 +228,10 @@
       }[m]));
     }
 
+    function normalize(s) {
+      return String(s || "").toLowerCase();
+    }
+
     function setLastQuery(q) {
       localStorage.setItem("waxalert_last_query", q);
       document.getElementById("lastQuery").textContent = q ? ("Last query: " + q) : "";
@@ -240,8 +253,6 @@
     // Render Export A1:B20 (2 columns) into a clean key/value card
     function exportCardHTML(exportData, ebaySoldUrl) {
       const rows = Array.isArray(exportData) ? exportData : [];
-
-      // Filter out empty lines
       const cleaned = rows
         .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
         .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
@@ -260,25 +271,91 @@
 
       return `
         <div class="card">
-          ${kvs || `<div class="muted">No export data returned yet. Check Export!A1:B20 and that formulas have time to recalc.</div>`}
+          ${kvs || `<div class="muted">No export data returned yet. Check Export!A1:B20 and formula refresh.</div>`}
           ${link}
         </div>
       `;
     }
 
+    // ---------------- TYPEAHEAD CATALOG ----------------
+    let PRODUCT_CATALOG = [];
+    let SELECTED_PRODUCT = null;
+
+    const suggestionsEl = document.getElementById("suggestions");
+    const selectedEl = document.getElementById("selectedProduct");
+
+    function setSelectedProduct(p) {
+      SELECTED_PRODUCT = p || null;
+      if (!SELECTED_PRODUCT) {
+        selectedEl.textContent = "";
+        return;
+      }
+      selectedEl.textContent = "Selected: " + SELECTED_PRODUCT.displayName + " (" + SELECTED_PRODUCT.code + ")";
+    }
+
+    function renderSuggestions(list) {
+      if (!list.length) {
+        suggestionsEl.innerHTML = "";
+        return;
+      }
+      suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
+        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
+          <div class="title">${escapeHTML(p.displayName)}</div>
+          <div class="meta">${escapeHTML(p.keywords || p.code)}</div>
+        </div>
+      `).join("");
+    }
+
+    function filterCatalog(q) {
+      const t = normalize(q).trim();
+      if (!t) return [];
+      return PRODUCT_CATALOG.filter(p => {
+        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
+        return hay.includes(t);
+      });
+    }
+
+    async function loadCatalog() {
+      // use cached catalog instantly
+      const cached = localStorage.getItem("waxalert_products_v1");
+      if (cached) {
+        try { PRODUCT_CATALOG = JSON.parse(cached) || []; } catch(e) {}
+      }
+
+      // refresh from API
+      try {
+        const data = await api("products", {});
+        if (data && data.ok && Array.isArray(data.products)) {
+          PRODUCT_CATALOG = data.products;
+          localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
+        }
+      } catch (e) {
+        // cached still works if API fails
+      }
+    }
+
     // ---------------- SEARCH FLOW ----------------
+    const qInput = document.getElementById("q");
     const resultsEl = document.getElementById("results");
 
-    async function runSearch(q) {
+    async function runSearch(q, selectedProduct) {
       q = String(q || "").trim();
-      if (!q) return;
+      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
 
-      document.getElementById("q").value = q;
-      setLastQuery(q);
+      // Persist the last query as what user sees
+      setLastQuery(q || (selectedProduct ? selectedProduct.displayName : ""));
 
       resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
 
-      const data = await api("search", { q });
+      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
+
+      if (selectedProduct && selectedProduct.ebayUrl) {
+        payload.ebayUrl = selectedProduct.ebayUrl;
+        payload.productCode = selectedProduct.code;
+        payload.productName = selectedProduct.displayName;
+      }
+
+      const data = await api("search", payload);
 
       if (!data || !data.ok) {
         resultsEl.innerHTML = `
@@ -290,23 +367,51 @@
         return;
       }
 
-      // Your Apps Script returns exportData and ebaySoldUrl
       resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
     }
 
+    // Typing shows suggestions and clears selection
+    qInput.addEventListener("input", () => {
+      setSelectedProduct(null);
+      const q = qInput.value.trim();
+      const matches = filterCatalog(q);
+      renderSuggestions(matches);
+    });
+
+    // Tap a suggestion => select and immediately search using product ebayUrl
+    suggestionsEl.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-code]");
+      if (!card) return;
+
+      const code = card.getAttribute("data-code");
+      const product = PRODUCT_CATALOG.find(p => p.code === code);
+      if (!product) return;
+
+      setSelectedProduct(product);
+      qInput.value = product.displayName;
+      suggestionsEl.innerHTML = "";
+      runSearch(product.displayName, product);
+    });
+
+    // Search button: if user selected product, use it; else free-text generic
     document.getElementById("btnSearch").addEventListener("click", () => {
-      const q = document.getElementById("q").value;
-      runSearch(q);
+      const q = qInput.value.trim();
+      runSearch(q, SELECTED_PRODUCT);
     });
 
     document.getElementById("btnLast").addEventListener("click", () => {
       const q = getLastQuery();
-      if (q) runSearch(q);
+      if (q) {
+        qInput.value = q;
+        runSearch(q, null);
+      }
     });
 
-    // Allow pressing Enter in the search input
-    document.getElementById("q").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") runSearch(e.target.value);
+    // Enter key triggers search (free-text unless they tapped a product)
+    qInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        runSearch(qInput.value.trim(), SELECTED_PRODUCT);
+      }
     });
 
     // ---------------- EXPORT DEBUG VIEW ----------------
@@ -320,6 +425,9 @@
       }
       exportEl.innerHTML = exportCardHTML(data.exportData, "");
     });
+
+    // init
+    loadCatalog();
   </script>
 </body>
 </html>
