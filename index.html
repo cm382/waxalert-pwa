@@ -3,74 +3,181 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>WaxAlert</title>
 
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="theme-color" content="#0b0b0b">
 
   <style>
     :root { --navH: 62px; --radius: 14px; }
-    body { margin:0; font-family: Arial, sans-serif; background:#0b0b0b; color:#fff; }
-    .content { padding: 16px 16px calc(var(--navH) + 18px); max-width: 900px; margin: 0 auto; }
-    .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px; }
-    input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background:#111; color:#fff; font-size:16px; }
-    button.primary { width:100%; margin-top:10px; padding: 12px; border:0; border-radius: 12px; background:#fff; color:#000; font-weight:700; cursor:pointer; }
-    .muted { opacity: 0.8; font-size: 13px; line-height: 1.4; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: #fff;
+    }
+    .content {
+      padding: 16px 16px calc(var(--navH) + 18px);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .row { display:flex; gap:10px; align-items:center; }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    h2 { margin: 0 0 10px; font-size: 20px; }
+    .muted { opacity: 0.8; font-size: 13px; line-height: 1.35; }
+    .small { opacity: 0.7; font-size: 12px; }
+    .spacer { height: 12px; }
 
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background:#111;
+      color:#fff;
+      font-size:16px;
+      outline: none;
+    }
+    button.primary {
+      width:100%;
+      margin-top:10px;
+      padding: 12px;
+      border:0;
+      border-radius: 12px;
+      background:#fff;
+      color:#000;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button.ghost {
+      width:100%;
+      margin-top:10px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.20);
+      background: transparent;
+      color:#fff;
+      cursor:pointer;
+    }
+
+    .list { margin-top: 12px; display: grid; gap: 10px; }
+
+    /* Bottom nav */
     .bottomNav {
-      position: fixed; left: 0; right: 0; bottom: 0;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
       height: var(--navH);
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 8px; padding: 10px 10px max(10px, env(safe-area-inset-bottom));
-      background: #0b0b0b; border-top: 1px solid rgba(255,255,255,0.12);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+      background: #0b0b0b;
+      border-top: 1px solid rgba(255,255,255,0.12);
       z-index: 9999;
-      max-width: 900px; margin: 0 auto;
+      max-width: 900px;
+      margin: 0 auto;
     }
     @media (min-width: 900px) {
       .bottomNav { left: 50%; transform: translateX(-50%); }
     }
     .navBtn {
-      border: 0; border-radius: var(--radius);
-      background: transparent; color: #fff;
-      font-size: 13px; padding: 10px 6px;
-      cursor: pointer; opacity: 0.75;
+      border: 0;
+      border-radius: var(--radius);
+      background: transparent;
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 6px;
+      cursor: pointer;
+      opacity: 0.75;
     }
-    .navBtn.active { background: rgba(255,255,255,0.12); opacity: 1; }
+    .navBtn.active {
+      background: rgba(255,255,255,0.12);
+      opacity: 1;
+    }
 
     .view { display:none; }
     .view.active { display:block; }
-    .list { margin-top: 12px; display: grid; gap: 10px; }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .kv:last-child { border-bottom: 0; }
+    .k { opacity: 0.85; }
+    .v { font-weight: 700; text-align: right; }
+    a { color: #fff; }
   </style>
 </head>
 
 <body>
   <main class="content">
+    <!-- SEARCH -->
     <section class="view active" id="view-search">
       <div class="card">
-        <h2 style="margin:0 0 8px;">WaxAlert</h2>
-        <div class="muted">Install this on iPhone: open in Safari → Share → Add to Home Screen.</div>
-        <div style="height:12px"></div>
-        <input id="q" placeholder="Search sealed wax (example: 2025 Topps Chrome Hobby)" />
+        <div class="row" style="justify-content: space-between;">
+          <h2>WaxAlert</h2>
+          <div class="small" id="buildTag"></div>
+        </div>
+        <div class="muted">
+          iPhone install: open in Safari → Share → Add to Home Screen.
+        </div>
+        <div class="spacer"></div>
+
+        <input id="q" placeholder="Search sealed wax (example: 2025-26 Topps Chrome Basketball Hobby)" />
         <button class="primary" id="btnSearch">Search</button>
+        <button class="ghost" id="btnLast">Use last query</button>
+
+        <div class="spacer"></div>
+        <div class="small" id="lastQuery"></div>
       </div>
 
       <div class="list" id="results"></div>
     </section>
 
+    <!-- PRICES -->
     <section class="view" id="view-prices">
-      <div class="card"><h2 style="margin:0;">Prices</h2><p class="muted">Wire this to your Apps Script endpoint next.</p></div>
+      <div class="card">
+        <h2>Prices</h2>
+        <div class="muted">
+          Next: turn Export rows into structured “Avg Sold / Count / Low / High” cards, and add product picker.
+        </div>
+      </div>
     </section>
 
+    <!-- ALERTS -->
     <section class="view" id="view-alerts">
-      <div class="card"><h2 style="margin:0;">Alerts</h2><p class="muted">Later: “notify me when under $X”.</p></div>
+      <div class="card">
+        <h2>Alerts</h2>
+        <div class="muted">
+          Later: “Notify me when under $X” (would write to a Sheets tab and run a timed Apps Script trigger).
+        </div>
+      </div>
     </section>
 
+    <!-- SAVED / DEBUG -->
     <section class="view" id="view-saved">
-      <div class="card"><h2 style="margin:0;">Saved</h2><p class="muted">Later: pinned products + last viewed.</p></div>
+      <div class="card">
+        <h2>Export Debug</h2>
+        <div class="muted">
+          This pulls the current Export!A1:B20 so you can verify your sheet is updating from the app.
+        </div>
+        <button class="primary" id="btnExport">Refresh Export</button>
+      </div>
+      <div class="list" id="exportView"></div>
     </section>
   </main>
 
@@ -82,94 +189,137 @@
   </nav>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyK9zQ1Q_kmZ_cpDWqdmxvOGjWhALwLfN74JDPZKcj-qkkJaTv6LIAaDNCabrRT00rg/exec";
+    // ---------------- CONFIG ----------------
+    const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
 
-async function api(action, payload) {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action, payload })
-  });
-  return await res.json();
-}
+    // Change this string any time you deploy so you can confirm you're seeing the latest build
+    const APP_VERSION = "2026-01-03-02";
 
-    // PWA service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+    document.getElementById("buildTag").textContent = "v" + APP_VERSION;
+
+    // ---------------- PWA SERVICE WORKER ----------------
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
     }
 
-    // Simple tab switching
-    const buttons = [...document.querySelectorAll('.navBtn')];
-    const views = [...document.querySelectorAll('.view')];
+    // ---------------- NAV ----------------
+    const buttons = [...document.querySelectorAll(".navBtn")];
+    const views = [...document.querySelectorAll(".view")];
     function showView(id) {
-      views.forEach(v => v.classList.toggle('active', v.id === id));
-      buttons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      views.forEach(v => v.classList.toggle("active", v.id === id));
+      buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
+      window.scrollTo({ top: 0, behavior: "instant" });
     }
-    buttons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.target)));
+    buttons.forEach(btn => btn.addEventListener("click", () => showView(btn.dataset.target)));
 
-   const resultsEl = document.getElementById('results');
+    // ---------------- HELPERS ----------------
+    function escapeHTML(s){
+      return String(s).replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
 
-function cardHTML(r) {
-  return `
-    <div class="card">
-      <div style="font-weight:700;">${escapeHTML(r.title)}</div>
-      <div class="muted" style="margin-top:6px;">$${Number(r.price).toFixed(2)}</div>
-      <button class="primary" style="margin-top:10px;" data-save='${escapeHTML(JSON.stringify(r))}'>Save</button>
-    </div>
-  `;
-}
+    function setLastQuery(q) {
+      localStorage.setItem("waxalert_last_query", q);
+      document.getElementById("lastQuery").textContent = q ? ("Last query: " + q) : "";
+    }
+    function getLastQuery() {
+      return localStorage.getItem("waxalert_last_query") || "";
+    }
+    setLastQuery(getLastQuery());
 
-function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    async function api(action, payload) {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, payload })
+      });
+      return await res.json();
+    }
 
-function getUserKey() {
-  // Simple, free “device key” (not secure, but good for v1)
-  let k = localStorage.getItem("waxalert_userKey");
-  if (!k) {
-    k = "u_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
-    localStorage.setItem("waxalert_userKey", k);
-  }
-  return k;
-}
+    // Render Export A1:B20 (2 columns) into a clean key/value card
+    function exportCardHTML(exportData, ebaySoldUrl) {
+      const rows = Array.isArray(exportData) ? exportData : [];
 
-document.getElementById('btnSearch').addEventListener('click', async () => {
-  const q = document.getElementById('q').value.trim();
-  if (!q) return;
+      // Filter out empty lines
+      const cleaned = rows
+        .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
+        .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
 
-  resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
+      const kvs = cleaned.map(([k,v]) => `
+        <div class="kv">
+          <div class="k">${escapeHTML(k || "")}</div>
+          <div class="v">${escapeHTML(v || "")}</div>
+        </div>
+      `).join("");
 
-  const data = await api("search", { q, userKey: getUserKey() });
+      const link = ebaySoldUrl ? `
+        <div class="spacer"></div>
+        <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
+      ` : "";
 
-  if (!data.ok) {
-    resultsEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML(data.error || "Unknown error")}</div></div>`;
-    return;
-  }
+      return `
+        <div class="card">
+          ${kvs || `<div class="muted">No export data returned yet. Check Export!A1:B20 and that formulas have time to recalc.</div>`}
+          ${link}
+        </div>
+      `;
+    }
 
-  resultsEl.innerHTML = (data.results || []).map(cardHTML).join("") || `<div class="card"><div class="muted">No results.</div></div>`;
-});
+    // ---------------- SEARCH FLOW ----------------
+    const resultsEl = document.getElementById("results");
 
-// Save handler (event delegation)
-document.addEventListener("click", async (e) => {
-  const btn = e.target.closest("button[data-save]");
-  if (!btn) return;
+    async function runSearch(q) {
+      q = String(q || "").trim();
+      if (!q) return;
 
-  const item = JSON.parse(btn.getAttribute("data-save"));
-  const q = document.getElementById('q').value.trim();
+      document.getElementById("q").value = q;
+      setLastQuery(q);
 
-  btn.textContent = "Saving…";
-  btn.disabled = true;
+      resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
 
-  const resp = await api("save", {
-    userKey: getUserKey(),
-    query: q,
-    productId: item.productId,
-    title: item.title,
-    sourceUrl: item.sourceUrl || ""
-  });
+      const data = await api("search", { q });
 
-  btn.textContent = resp.ok ? "Saved ✓" : "Save failed";
-});
+      if (!data || !data.ok) {
+        resultsEl.innerHTML = `
+          <div class="card">
+            <b>Error</b>
+            <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
+          </div>
+        `;
+        return;
+      }
 
+      // Your Apps Script returns exportData and ebaySoldUrl
+      resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
+    }
+
+    document.getElementById("btnSearch").addEventListener("click", () => {
+      const q = document.getElementById("q").value;
+      runSearch(q);
+    });
+
+    document.getElementById("btnLast").addEventListener("click", () => {
+      const q = getLastQuery();
+      if (q) runSearch(q);
+    });
+
+    // Allow pressing Enter in the search input
+    document.getElementById("q").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") runSearch(e.target.value);
+    });
+
+    // ---------------- EXPORT DEBUG VIEW ----------------
+    const exportEl = document.getElementById("exportView");
+    document.getElementById("btnExport").addEventListener("click", async () => {
+      exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
+      const data = await api("export", {});
+      if (!data || !data.ok) {
+        exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div></div>`;
+        return;
+      }
+      exportEl.innerHTML = exportCardHTML(data.exportData, "");
+    });
   </script>
 </body>
 </html>
