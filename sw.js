@@ -1,13 +1,20 @@
-const CACHE = "waxalert-v1";
+const CACHE = "waxalert-v2";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
 });
 
+
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => (k !== CACHE ? caches.delete(k) : null)));
+    await self.clients.claim();
+  })());
 });
+
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
