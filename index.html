@@ -27,13 +27,15 @@
       margin: 0 auto;
     }
     .row { display:flex; gap:10px; align-items:center; }
+    .rowSplit { display:flex; gap:10px; align-items:center; }
+    .rowSplit > * { flex: 1; }
     .card {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 16px;
       padding: 14px;
     }
-    h2 { margin: 0 0 10px; font-size: 20px; }
+    h2 { margin: 0 0 8px; font-size: 20px; }
     .muted { opacity: 0.8; font-size: 13px; line-height: 1.35; }
     .small { opacity: 0.7; font-size: 12px; }
     .spacer { height: 12px; }
@@ -49,9 +51,9 @@
       font-size:16px;
       outline: none;
     }
+
     button.primary {
       width:100%;
-      margin-top:10px;
       padding: 12px;
       border:0;
       border-radius: 12px;
@@ -62,7 +64,6 @@
     }
     button.ghost {
       width:100%;
-      margin-top:10px;
       padding: 12px;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.20);
@@ -70,13 +71,13 @@
       color:#fff;
       cursor:pointer;
     }
+    button:disabled { opacity: 0.6; cursor: default; }
 
     .list { margin-top: 12px; display: grid; gap: 10px; }
 
     /* Suggestions */
     .suggestion { cursor: pointer; }
-    .suggestion .title { font-weight: 700; }
-    .suggestion .meta { opacity: 0.8; font-size: 12px; margin-top: 4px; }
+    .suggestion .title { font-weight: 800; font-size: 15px; line-height: 1.2; }
 
     /* Bottom nav */
     .bottomNav {
@@ -114,6 +115,7 @@
     .view { display:none; }
     .view.active { display:block; }
 
+    /* Key/value output */
     .kv {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -123,7 +125,7 @@
     }
     .kv:last-child { border-bottom: 0; }
     .k { opacity: 0.85; }
-    .v { font-weight: 700; text-align: right; }
+    .v { font-weight: 800; text-align: right; }
     a { color: #fff; }
   </style>
 </head>
@@ -137,22 +139,24 @@
           <h2>WaxAlert</h2>
           <div class="small" id="buildTag"></div>
         </div>
+
         <div class="muted">
-          Start typing. Tap a match to use the exact Products eBayURL (best results).
+          Start typing and tap a match. (Behind the scenes we’re using your Products keywords, but we only show the product name.)
         </div>
+
         <div class="spacer"></div>
 
-        <input id="q" placeholder="Type: dune chrome hobby, topps chrome hobby, etc." />
+        <input id="q" placeholder="Ex: 2025-26 Topps Chrome Baseball, Panini Prism, etc." />
 
-        <!-- typeahead results -->
+        <!-- Typeahead results -->
         <div class="list" id="suggestions"></div>
 
-        <button class="primary" id="btnSearch">Search</button>
-        <button class="ghost" id="btnLast">Use last query</button>
-
         <div class="spacer"></div>
-        <div class="small" id="lastQuery"></div>
-        <div class="small" id="selectedProduct"></div>
+
+        <div class="rowSplit">
+          <button class="primary" id="btnSearch">Search</button>
+          <button class="ghost" id="btnClear">Clear Text</button>
+        </div>
       </div>
 
       <div class="list" id="results"></div>
@@ -162,9 +166,7 @@
     <section class="view" id="view-prices">
       <div class="card">
         <h2>Prices</h2>
-        <div class="muted">
-          Next: map Export rows into a cleaner “Avg / Count / Low / High” layout.
-        </div>
+        <div class="muted">Next: format the Export output into a cleaner “Avg / Count / Low / High” card.</div>
       </div>
     </section>
 
@@ -172,9 +174,7 @@
     <section class="view" id="view-alerts">
       <div class="card">
         <h2>Alerts</h2>
-        <div class="muted">
-          Later: track + notify when under $X (Sheets + Apps Script trigger).
-        </div>
+        <div class="muted">Later: “notify me under $X” (Sheets + Apps Script trigger).</div>
       </div>
     </section>
 
@@ -182,9 +182,8 @@
     <section class="view" id="view-saved">
       <div class="card">
         <h2>Export Debug</h2>
-        <div class="muted">
-          Pulls current Export!A1:B20 without running a new search.
-        </div>
+        <div class="muted">Pulls current Export!A1:B20 without running a new search.</div>
+        <div class="spacer"></div>
         <button class="primary" id="btnExport">Refresh Export</button>
       </div>
       <div class="list" id="exportView"></div>
@@ -200,10 +199,11 @@
 
   <script>
     // ---------------- CONFIG ----------------
-    const API_URL = "https://script.google.com/macros/s/AKfycbyfFFhZUpuqj-S59anNujeWG_v3MVaKaOxwC_ollZTT2GfXeShjiX0pZiWf28nH60WF_Q/exec";
+    // Update this only if your Apps Script /exec changed (new deployment).
+    const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
 
-    // bump this any time you deploy so you can confirm you're seeing the latest build
-    const APP_VERSION = "2026-01-03-03";
+    // Simple version label the user asked for
+    const APP_VERSION = "5";
     document.getElementById("buildTag").textContent = "v" + APP_VERSION;
 
     // ---------------- PWA SERVICE WORKER ----------------
@@ -227,19 +227,7 @@
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
     }
-
-    function normalize(s) {
-      return String(s || "").toLowerCase();
-    }
-
-    function setLastQuery(q) {
-      localStorage.setItem("waxalert_last_query", q);
-      document.getElementById("lastQuery").textContent = q ? ("Last query: " + q) : "";
-    }
-    function getLastQuery() {
-      return localStorage.getItem("waxalert_last_query") || "";
-    }
-    setLastQuery(getLastQuery());
+    function normalize(s) { return String(s || "").toLowerCase(); }
 
     async function api(action, payload) {
       const res = await fetch(API_URL, {
@@ -250,7 +238,6 @@
       return await res.json();
     }
 
-    // Render Export A1:B20 (2 columns) into a clean key/value card
     function exportCardHTML(exportData, ebaySoldUrl) {
       const rows = Array.isArray(exportData) ? exportData : [];
       const cleaned = rows
@@ -271,7 +258,7 @@
 
       return `
         <div class="card">
-          ${kvs || `<div class="muted">No export data returned yet. Check Export!A1:B20 and formula refresh.</div>`}
+          ${kvs || `<div class="muted">No export data returned yet.</div>`}
           ${link}
         </div>
       `;
@@ -281,16 +268,12 @@
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
 
+    const qInput = document.getElementById("q");
     const suggestionsEl = document.getElementById("suggestions");
-    const selectedEl = document.getElementById("selectedProduct");
+    const resultsEl = document.getElementById("results");
 
     function setSelectedProduct(p) {
       SELECTED_PRODUCT = p || null;
-      if (!SELECTED_PRODUCT) {
-        selectedEl.textContent = "";
-        return;
-      }
-      selectedEl.textContent = "Selected: " + SELECTED_PRODUCT.displayName + " (" + SELECTED_PRODUCT.code + ")";
     }
 
     function renderSuggestions(list) {
@@ -298,10 +281,11 @@
         suggestionsEl.innerHTML = "";
         return;
       }
+
+      // Show ONLY DisplayName
       suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
         <div class="card suggestion" data-code="${escapeHTML(p.code)}">
           <div class="title">${escapeHTML(p.displayName)}</div>
-          <div class="meta">${escapeHTML(p.keywords || p.code)}</div>
         </div>
       `).join("");
     }
@@ -309,20 +293,25 @@
     function filterCatalog(q) {
       const t = normalize(q).trim();
       if (!t) return [];
+
+      // Filter by DisplayName + Keywords + Code, but don't display keywords
       return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
+        const hay =
+          normalize(p.displayName) + " " +
+          normalize(p.keywords) + " " +
+          normalize(p.code);
         return hay.includes(t);
       });
     }
 
     async function loadCatalog() {
-      // use cached catalog instantly
+      // Fast load from cache
       const cached = localStorage.getItem("waxalert_products_v1");
       if (cached) {
         try { PRODUCT_CATALOG = JSON.parse(cached) || []; } catch(e) {}
       }
 
-      // refresh from API
+      // Refresh from API
       try {
         const data = await api("products", {});
         if (data && data.ok && Array.isArray(data.products)) {
@@ -330,25 +319,42 @@
           localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
         }
       } catch (e) {
-        // cached still works if API fails
+        // ignore; cached still works
       }
     }
 
-    // ---------------- SEARCH FLOW ----------------
-    const qInput = document.getElementById("q");
-    const resultsEl = document.getElementById("results");
+    // Typing shows suggestions; selection cleared
+    qInput.addEventListener("input", () => {
+      setSelectedProduct(null);
+      const q = qInput.value.trim();
+      renderSuggestions(filterCatalog(q));
+    });
 
+    // Tap suggestion => select product, fill input with DisplayName, run search using its ebayUrl
+    suggestionsEl.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-code]");
+      if (!card) return;
+
+      const code = card.getAttribute("data-code");
+      const product = PRODUCT_CATALOG.find(p => p.code === code);
+      if (!product) return;
+
+      setSelectedProduct(product);
+      qInput.value = product.displayName;
+      suggestionsEl.innerHTML = "";
+      runSearch(product.displayName, product);
+    });
+
+    // ---------------- SEARCH FLOW ----------------
     async function runSearch(q, selectedProduct) {
       q = String(q || "").trim();
       if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
-
-      // Persist the last query as what user sees
-      setLastQuery(q || (selectedProduct ? selectedProduct.displayName : ""));
 
       resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
 
       const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
 
+      // If selected from Products, use exact URL
       if (selectedProduct && selectedProduct.ebayUrl) {
         payload.ebayUrl = selectedProduct.ebayUrl;
         payload.productCode = selectedProduct.code;
@@ -370,48 +376,23 @@
       resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
     }
 
-    // Typing shows suggestions and clears selection
-    qInput.addEventListener("input", () => {
-      setSelectedProduct(null);
-      const q = qInput.value.trim();
-      const matches = filterCatalog(q);
-      renderSuggestions(matches);
-    });
-
-    // Tap a suggestion => select and immediately search using product ebayUrl
-    suggestionsEl.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-code]");
-      if (!card) return;
-
-      const code = card.getAttribute("data-code");
-      const product = PRODUCT_CATALOG.find(p => p.code === code);
-      if (!product) return;
-
-      setSelectedProduct(product);
-      qInput.value = product.displayName;
-      suggestionsEl.innerHTML = "";
-      runSearch(product.displayName, product);
-    });
-
-    // Search button: if user selected product, use it; else free-text generic
     document.getElementById("btnSearch").addEventListener("click", () => {
       const q = qInput.value.trim();
       runSearch(q, SELECTED_PRODUCT);
     });
 
-    document.getElementById("btnLast").addEventListener("click", () => {
-      const q = getLastQuery();
-      if (q) {
-        qInput.value = q;
-        runSearch(q, null);
-      }
+    // Enter key triggers search
+    qInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") runSearch(qInput.value.trim(), SELECTED_PRODUCT);
     });
 
-    // Enter key triggers search (free-text unless they tapped a product)
-    qInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        runSearch(qInput.value.trim(), SELECTED_PRODUCT);
-      }
+    // Clear button: clears text + suggestions + results + selection
+    document.getElementById("btnClear").addEventListener("click", () => {
+      qInput.value = "";
+      suggestionsEl.innerHTML = "";
+      resultsEl.innerHTML = "";
+      setSelectedProduct(null);
+      qInput.focus();
     });
 
     // ---------------- EXPORT DEBUG VIEW ----------------
