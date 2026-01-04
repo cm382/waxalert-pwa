@@ -1,5 +1,8 @@
-// WaxAlert PWA Service Worker (safe + sync-friendly)
-const CACHE = "waxalert-v7";
+// WaxAlert PWA Service Worker (v5)
+// - Cache app shell
+// - Never cache POST
+// - Never cache script.google.com
+const CACHE = "waxalert-v5";
 
 const APP_SHELL = [
   "/",
