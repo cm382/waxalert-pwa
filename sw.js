@@ -25,7 +25,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Never cache POST (Apps Script calls)
+  // Never cache non-GET (Apps Script calls are POST)
   if (req.method !== "GET") {
     event.respondWith(fetch(req));
     return;
