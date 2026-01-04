@@ -12,13 +12,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Cache-first for app shell files
   if (APP_SHELL.includes(url.pathname)) {
-    event.respondWith(caches.match(event.request).then((r) => r || fetch(event.request)));
+    event.respondWith(caches.match(event.request).then(r => r || fetch(event.request)));
     return;
   }
 
-  // Network-first for everything else (API calls, etc.), fallback to cache
   event.respondWith(
     fetch(event.request)
       .then((res) => {
