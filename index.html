@@ -9,420 +9,242 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="theme-color" content="#0b0b0b">
 
   <style>
     :root {
-      --navH: 62px;
-      --radius: 14px;
-
-      /* Dark defaults */
       --bg: #0b0b0b;
       --text: #ffffff;
-      --muted: rgba(255,255,255,0.78);
-      --cardBg: rgba(255,255,255,0.08);
-      --cardBorder: rgba(255,255,255,0.12);
-      --inputBg: #111;
-      --inputBorder: rgba(255,255,255,0.16);
-      --ghostBorder: rgba(255,255,255,0.20);
-      --primaryBg: #ffffff;
+      --muted: rgba(255,255,255,.7);
+      --card: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.12);
+      --input: #111;
+      --primary: #ffffff;
       --primaryText: #000000;
     }
 
-    /* Light mode variables */
     [data-theme="light"] {
       --bg: #ffffff;
       --text: #111111;
-      --muted: rgba(0,0,0,0.62);
-      --cardBg: rgba(0,0,0,0.04);
-      --cardBorder: rgba(0,0,0,0.10);
-      --inputBg: #ffffff;
-      --inputBorder: rgba(0,0,0,0.18);
-      --ghostBorder: rgba(0,0,0,0.20);
-      --primaryBg: #111111;
+      --muted: rgba(0,0,0,.6);
+      --card: rgba(0,0,0,.04);
+      --border: rgba(0,0,0,.12);
+      --input: #ffffff;
+      --primary: #111111;
       --primaryText: #ffffff;
     }
 
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+    html,body { margin:0; height:100%; font-family:Arial,sans-serif; background:var(--bg); color:var(--text); }
+    main { max-width:900px; margin:0 auto; padding:16px; }
 
-    .content {
-      padding: 16px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .topBar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .brand {
+    .top {
       display:flex;
-      flex-direction: column;
-      gap: 2px;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:14px;
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: 20px;
-      letter-spacing: 0.2px;
-    }
-
-    .small { opacity: 0.75; font-size: 12px; }
-    .muted { color: var(--muted); font-size: 13px; line-height: 1.35; }
-    .spacer { height: 12px; }
+    h1 { margin:0; font-size:22px; }
+    .small { font-size:12px; opacity:.7; }
 
     .card {
-      background: var(--cardBg);
-      border: 1px solid var(--cardBorder);
-      border-radius: 16px;
-      padding: 14px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
     }
 
     input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--inputBorder);
-      background: var(--inputBg);
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
-    }
-
-    .rowSplit { display:flex; gap:10px; align-items:center; }
-    .rowSplit > * { flex: 1; }
-
-    button.primary {
       width:100%;
-      padding: 12px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--primaryBg);
-      color: var(--primaryText);
-      font-weight: 800;
-      cursor: pointer;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:var(--input);
+      color:var(--text);
+      font-size:16px;
+      box-sizing:border-box;
     }
 
-    button.ghost {
+    button {
+      padding:12px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .primary {
+      background:var(--primary);
+      color:var(--primaryText);
+      border:none;
       width:100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--ghostBorder);
-      background: transparent;
-      color: var(--text);
-      cursor: pointer;
     }
 
-    button.iconBtn {
-      border: 1px solid var(--cardBorder);
-      background: var(--cardBg);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 8px 10px;
-      cursor: pointer;
-      font-size: 13px;
-      white-space: nowrap;
+    .ghost {
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--text);
+      width:100%;
     }
 
-    button:disabled { opacity: 0.6; cursor: default; }
+    .row { display:flex; gap:10px; }
+    .list { margin-top:12px; display:grid; gap:10px; }
 
-    .list { margin-top: 12px; display: grid; gap: 10px; }
+    .suggestion { cursor:pointer; }
+    .suggestion b { font-size:15px; }
 
-    /* Suggestions (DisplayName only) */
-    .suggestion { cursor: pointer; }
-    .suggestion .title { font-weight: 800; font-size: 15px; line-height: 1.2; }
-
-    /* Key/value output */
     .kv {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--cardBorder);
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      padding:6px 0;
+      border-bottom:1px solid var(--border);
     }
-    .kv:last-child { border-bottom: 0; }
-    .k { opacity: 0.85; }
-    .v { font-weight: 800; text-align: right; }
 
-    a { color: inherit; }
+    .kv:last-child { border-bottom:none; }
+
+    .themeBtn {
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+    }
   </style>
 </head>
 
 <body>
-  <main class="content">
+<main>
 
-    <div class="topBar">
-      <div class="brand">
-        <h1>WaxAlert</h1>
-        <div class="small" id="buildTag"></div>
-      </div>
+  <div class="top">
+    <div>
+      <h1>WaxAlert</h1>
+      <div class="small">v5</div>
+    </div>
+    <button class="themeBtn" id="themeToggle">Theme</button>
+  </div>
 
-      <button class="iconBtn" id="btnTheme" title="Toggle Light/Dark">Theme</button>
+  <div class="card">
+    <div class="small" style="margin-bottom:8px">
+      Type and select a product. Matching uses keywords, but only product names are shown.
     </div>
 
-    <div class="card">
-      <div class="muted">
-        Start typing and tap a match. Matching uses your Products keywords, but only the product name is shown.
-      </div>
+    <input id="q" placeholder="Ex: 2025-26 Topps Midnight Basketball" />
 
-      <div class="spacer"></div>
+    <div class="list" id="suggestions"></div>
 
-      <input id="q" placeholder="Ex: 2025-26 Topps Chrome Baseball, Panini Prism, etc." />
-
-      <!-- Typeahead results -->
-      <div class="list" id="suggestions"></div>
-
-      <div class="spacer"></div>
-
-      <div class="rowSplit">
-        <button class="primary" id="btnSearch">Search</button>
-        <button class="ghost" id="btnClear">Clear Text</button>
-      </div>
+    <div class="row" style="margin-top:12px">
+      <button class="primary" id="searchBtn">Search</button>
+      <button class="ghost" id="clearBtn">Clear</button>
     </div>
+  </div>
 
-    <div class="list" id="results"></div>
+  <div class="list" id="results"></div>
 
-  </main>
+</main>
 
-  <script>
-    // ---------------- CONFIG ----------------
-    const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
 
-    // User requested version label
-    const APP_VERSION = "5";
-    document.getElementById("buildTag").textContent = "v" + APP_VERSION;
+  let PRODUCTS = [];
+  let SELECTED = null;
 
-    // ---------------- PWA SERVICE WORKER ----------------
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
-    }
+  const q = document.getElementById("q");
+  const suggestions = document.getElementById("suggestions");
+  const results = document.getElementById("results");
 
-    // ---------------- HELPERS ----------------
-    function escapeHTML(s){
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
-    function normalize(s) { return String(s || "").toLowerCase(); }
+  async function api(action, payload) {
+    return fetch(API_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body:JSON.stringify({ action, payload })
+    }).then(r=>r.json());
+  }
 
-    async function api(action, payload) {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, payload })
-      });
-      return await res.json();
-    }
+  function norm(s){ return (s||"").toLowerCase(); }
 
-    // ---------------- THEME TOGGLE ----------------
-    const THEME_KEY = "waxalert_theme";
-    const btnTheme = document.getElementById("btnTheme");
+  function renderSuggestions(list){
+    suggestions.innerHTML = list.slice(0,10).map(p => `
+      <div class="card suggestion" data-code="${p.code}">
+        <b>${p.displayName}</b>
+      </div>
+    `).join("");
+  }
 
-    function applyTheme(theme) {
-      if (theme === "light") {
-        document.documentElement.setAttribute("data-theme", "light");
-      } else if (theme === "dark") {
-        document.documentElement.setAttribute("data-theme", "dark");
-      } else {
-        document.documentElement.removeAttribute("data-theme"); // default (dark vars)
-      }
-    }
+  q.addEventListener("input", () => {
+    SELECTED = null;
+    const v = norm(q.value);
+    if (!v) return suggestions.innerHTML = "";
+    renderSuggestions(PRODUCTS.filter(p =>
+      (norm(p.displayName) + " " + norm(p.keywords)).includes(v)
+    ));
+  });
 
-    function getPreferredTheme() {
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "light" || saved === "dark") return saved;
-      // Default: match OS preference if available, otherwise dark
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
-      return "dark";
-    }
+  suggestions.addEventListener("click", e => {
+    const el = e.target.closest("[data-code]");
+    if (!el) return;
+    SELECTED = PRODUCTS.find(p => p.code === el.dataset.code);
+    q.value = SELECTED.displayName;
+    suggestions.innerHTML = "";
+    runSearch();
+  });
 
-    function toggleTheme() {
-      const cur = getPreferredTheme();
-      const next = (cur === "dark") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
-      applyTheme(next);
-      btnTheme.textContent = (next === "dark") ? "Dark" : "Light";
-    }
+  async function runSearch(){
+    if (!SELECTED) return;
+    results.innerHTML = `<div class="card">Searching…</div>`;
 
-    // init theme
-    const initTheme = getPreferredTheme();
-    applyTheme(initTheme);
-    btnTheme.textContent = (initTheme === "dark") ? "Dark" : "Light";
-    btnTheme.addEventListener("click", toggleTheme);
-
-    // ---------------- TYPEAHEAD CATALOG ----------------
-    let PRODUCT_CATALOG = [];
-    let SELECTED_PRODUCT = null;
-
-    const qInput = document.getElementById("q");
-    const suggestionsEl = document.getElementById("suggestions");
-    const resultsEl = document.getElementById("results");
-
-    function setSelectedProduct(p) {
-      SELECTED_PRODUCT = p || null;
-    }
-
-    function renderSuggestions(list) {
-      if (!list.length) {
-        suggestionsEl.innerHTML = "";
-        return;
-      }
-      // Show ONLY DisplayName
-      suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
-        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
-          <div class="title">${escapeHTML(p.displayName)}</div>
-        </div>
-      `).join("");
-    }
-
-    function filterCatalog(q) {
-      const t = normalize(q).trim();
-      if (!t) return [];
-
-      // Filter by DisplayName + Keywords + Code (but do not display keywords)
-      return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
-        return hay.includes(t);
-      });
-    }
-
-    async function loadCatalog() {
-      // Cached catalog for speed
-      const cached = localStorage.getItem("waxalert_products_v1");
-      if (cached) {
-        try { PRODUCT_CATALOG = JSON.parse(cached) || []; } catch(e) {}
-      }
-
-      // Refresh from API
-      try {
-        const data = await api("products", {});
-        if (data && data.ok && Array.isArray(data.products)) {
-          PRODUCT_CATALOG = data.products;
-          localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
-        }
-      } catch (e) {
-        // cached still works
-      }
-    }
-
-    // Typing shows suggestions; selection cleared
-    qInput.addEventListener("input", () => {
-      setSelectedProduct(null);
-      renderSuggestions(filterCatalog(qInput.value.trim()));
+    const res = await api("search", {
+      q: SELECTED.displayName,
+      ebayUrl: SELECTED.ebayUrl,
+      productCode: SELECTED.code,
+      productName: SELECTED.displayName
     });
 
-    // Tap suggestion => select product, fill input, run search using its ebayUrl
-    suggestionsEl.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-code]");
-      if (!card) return;
+    if (!res.ok) {
+      results.innerHTML = `<div class="card">Error</div>`;
+      return;
+    }
 
-      const code = card.getAttribute("data-code");
-      const product = PRODUCT_CATALOG.find(p => p.code === code);
-      if (!product) return;
+    const rows = res.exportData || [];
+    const kv = rows.map(r => `
+      <div class="kv"><div>${r[0]}</div><div><b>${r[1]}</b></div></div>
+    `).join("");
 
-      setSelectedProduct(product);
-      qInput.value = product.displayName;
-      suggestionsEl.innerHTML = "";
-      runSearch(product.displayName, product);
-    });
-
-    // ---------------- RESULTS RENDERING ----------------
-    // Removed: "Open eBay sold search"
-    // Added: "View on ChasingMajors" button (uses Products column E / checklistUrl)
-
-    function exportCardHTML(exportData, selectedProduct) {
-      const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
-        .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
-
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k || "")}</div>
-          <div class="v">${escapeHTML(v || "")}</div>
-        </div>
-      `).join("");
-
-      // CM button only when we have a selected product + a CM URL
-      const cmUrl = selectedProduct && selectedProduct.checklistUrl ? String(selectedProduct.checklistUrl).trim() : "";
-      const cmButton = cmUrl ? `
-        <div class="spacer"></div>
-        <a href="${escapeHTML(cmUrl)}" target="_blank" rel="noopener" style="text-decoration:none;">
-          <button class="primary" type="button">View details on ChasingMajors</button>
+    const cm = SELECTED.checklistUrl ? `
+      <div style="margin-top:12px">
+        <a href="${SELECTED.checklistUrl}" target="_blank">
+          <button class="primary">View on ChasingMajors</button>
         </a>
-      ` : "";
+      </div>` : "";
 
-      return `
-        <div class="card">
-          ${kvs || `<div class="muted">No export data returned yet.</div>`}
-          ${cmButton}
-        </div>
-      `;
-    }
+    results.innerHTML = `<div class="card">${kv}${cm}</div>`;
+  }
 
-    // ---------------- SEARCH FLOW ----------------
-    async function runSearch(q, selectedProduct) {
-      q = String(q || "").trim();
-      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
+  document.getElementById("searchBtn").onclick = runSearch;
+  document.getElementById("clearBtn").onclick = () => {
+    q.value=""; suggestions.innerHTML=""; results.innerHTML=""; SELECTED=null;
+  };
 
-      resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
+  async function loadProducts(){
+    const res = await api("products",{});
+    if (res.ok) PRODUCTS = res.products;
+  }
 
-      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
+  // Theme toggle
+  const root = document.documentElement;
+  const themeBtn = document.getElementById("themeToggle");
+  let theme = localStorage.getItem("theme") || "dark";
+  root.dataset.theme = theme;
+  themeBtn.textContent = theme === "dark" ? "Dark" : "Light";
 
-      if (selectedProduct && selectedProduct.ebayUrl) {
-        payload.ebayUrl = selectedProduct.ebayUrl;
-        payload.productCode = selectedProduct.code;
-        payload.productName = selectedProduct.displayName;
-      }
+  themeBtn.onclick = () => {
+    theme = theme === "dark" ? "light" : "dark";
+    root.dataset.theme = theme;
+    localStorage.setItem("theme", theme);
+    themeBtn.textContent = theme === "dark" ? "Dark" : "Light";
+  };
 
-      const data = await api("search", payload);
-
-      if (!data || !data.ok) {
-        resultsEl.innerHTML = `
-          <div class="card">
-            <b>Error</b>
-            <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-          </div>
-        `;
-        return;
-      }
-
-      // Use the selected product to drive the CM button.
-      // If they free-text searched without selecting, no CM button (by design).
-      resultsEl.innerHTML = exportCardHTML(data.exportData, selectedProduct);
-    }
-
-    document.getElementById("btnSearch").addEventListener("click", () => {
-      runSearch(qInput.value.trim(), SELECTED_PRODUCT);
-    });
-
-    qInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") runSearch(qInput.value.trim(), SELECTED_PRODUCT);
-    });
-
-    // Clear button: clears text + suggestions + results + selection
-    document.getElementById("btnClear").addEventListener("click", () => {
-      qInput.value = "";
-      suggestionsEl.innerHTML = "";
-      resultsEl.innerHTML = "";
-      setSelectedProduct(null);
-      qInput.focus();
-    });
-
-    // init
-    loadCatalog();
-  </script>
+  loadProducts();
+</script>
 </body>
 </html>
