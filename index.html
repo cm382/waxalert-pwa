@@ -3,385 +3,109 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>WaxAlert</title>
 
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="theme-color" content="#0b0b0b">
 
   <style>
-    :root{
-      --bg:#0b0b0b;
-      --text:#ffffff;
-      --muted:rgba(255,255,255,.72);
-      --card:rgba(255,255,255,.08);
-      --border:rgba(255,255,255,.12);
-      --input:#111;
+    :root { --navH: 62px; --radius: 14px; }
+    body { margin:0; font-family: Arial, sans-serif; background:#0b0b0b; color:#fff; }
+    .content { padding: 16px 16px calc(var(--navH) + 18px); max-width: 900px; margin: 0 auto; }
+    .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px; }
+    input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16); background:#111; color:#fff; font-size:16px; }
+    button.primary { width:100%; margin-top:10px; padding: 12px; border:0; border-radius: 12px; background:#fff; color:#000; font-weight:700; cursor:pointer; }
+    .muted { opacity: 0.8; font-size: 13px; line-height: 1.4; }
 
-      --primary:#ffffff;
-      --primaryText:#000000;
-
-      --shadow: 0 10px 30px rgba(0,0,0,.25);
-      --radius:16px;
+    .bottomNav {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      height: var(--navH);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 8px; padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+      background: #0b0b0b; border-top: 1px solid rgba(255,255,255,0.12);
+      z-index: 9999;
+      max-width: 900px; margin: 0 auto;
     }
-
-    [data-theme="light"]{
-      --bg:#ffffff;
-      --text:#111111;
-      --muted:rgba(0,0,0,.62);
-      --card:rgba(0,0,0,.04);
-      --border:rgba(0,0,0,.12);
-      --input:#ffffff;
-
-      --primary:#111111;
-      --primaryText:#ffffff;
-
-      --shadow: 0 10px 30px rgba(0,0,0,.08);
+    @media (min-width: 900px) {
+      .bottomNav { left: 50%; transform: translateX(-50%); }
     }
-
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
+    .navBtn {
+      border: 0; border-radius: var(--radius);
+      background: transparent; color: #fff;
+      font-size: 13px; padding: 10px 6px;
+      cursor: pointer; opacity: 0.75;
     }
+    .navBtn.active { background: rgba(255,255,255,0.12); opacity: 1; }
 
-    main{
-      max-width:900px;
-      margin:0 auto;
-      padding:16px;
-    }
-
-    .top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .brand h1{
-      margin:0;
-      font-size:22px;
-      letter-spacing:.2px;
-    }
-    .brand .ver{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:4px;
-    }
-
-    .btnSmall{
-      border:1px solid var(--border);
-      background:var(--card);
-      color:var(--text);
-      border-radius:999px;
-      padding:8px 12px;
-      cursor:pointer;
-      font-size:13px;
-      white-space:nowrap;
-    }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow: var(--shadow);
-    }
-
-    .help{
-      font-size:13px;
-      line-height:1.35;
-      color:var(--muted);
-      margin-bottom:10px;
-    }
-
-    input{
-      width:100%;
-      box-sizing:border-box;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:var(--input);
-      color:var(--text);
-      font-size:16px;
-      outline:none;
-    }
-
-    .row{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-    }
-    .row > * { flex:1; }
-
-    button{
-      padding:12px;
-      border-radius:12px;
-      font-weight:800;
-      cursor:pointer;
-      border:0;
-      font-size:16px;
-    }
-
-    .primary{ background:var(--primary); color:var(--primaryText); }
-    .ghost{
-      background:transparent;
-      border:1px solid var(--border);
-      color:var(--text);
-      font-weight:800;
-    }
-
-    .list{
-      margin-top:12px;
-      display:grid;
-      gap:10px;
-    }
-
-    .suggestion{
-      cursor:pointer;
-      padding:12px;
-      border-radius:14px;
-      background:var(--card);
-      border:1px solid var(--border);
-    }
-    .suggestion b{ display:block; font-size:15px; line-height:1.2; }
-
-    .kv{
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap:10px;
-      padding:8px 0;
-      border-bottom:1px solid var(--border);
-    }
-    .kv:last-child{border-bottom:none}
-    .k{color:var(--muted)}
-    .v{font-weight:900;text-align:right}
-
-    .btnLink{ text-decoration:none; display:block; margin-top:12px; }
+    .view { display:none; }
+    .view.active { display:block; }
+    .list { margin-top: 12px; display: grid; gap: 10px; }
   </style>
 </head>
 
 <body>
-  <main>
-    <div class="top">
-      <div class="brand">
-        <h1>WaxAlert</h1>
-        <div class="ver">v5</div>
+  <main class="content">
+    <section class="view active" id="view-search">
+      <div class="card">
+        <h2 style="margin:0 0 8px;">WaxAlert</h2>
+        <div class="muted">Install this on iPhone: open in Safari → Share → Add to Home Screen.</div>
+        <div style="height:12px"></div>
+        <input id="q" placeholder="Search sealed wax (example: 2025 Topps Chrome Hobby)" />
+        <button class="primary" id="btnSearch">Search</button>
       </div>
-      <button class="btnSmall" id="btnTheme">Light</button>
-    </div>
 
-    <div class="card">
-      <div class="help">Start typing and tap a match. Matching uses your Products keywords, but only the product name is shown.</div>
+      <div class="list" id="results"></div>
+    </section>
 
-      <input id="q" placeholder="Ex: 2025-26 Topps Midnight Basketball" />
-      <div class="help" id="catalogStatus" style="margin-top:8px; margin-bottom:0;"></div>
+    <section class="view" id="view-prices">
+      <div class="card"><h2 style="margin:0;">Prices</h2><p class="muted">Wire this to your Apps Script endpoint next.</p></div>
+    </section>
 
-      <div class="list" id="suggestions"></div>
+    <section class="view" id="view-alerts">
+      <div class="card"><h2 style="margin:0;">Alerts</h2><p class="muted">Later: “notify me when under $X”.</p></div>
+    </section>
 
-      <div class="row">
-        <button class="primary" id="searchBtn">Search</button>
-        <button class="ghost" id="clearBtn">Clear Text</button>
-      </div>
-    </div>
-
-    <div class="list" id="results"></div>
+    <section class="view" id="view-saved">
+      <div class="card"><h2 style="margin:0;">Saved</h2><p class="muted">Later: pinned products + last viewed.</p></div>
+    </section>
   </main>
 
+  <nav class="bottomNav" aria-label="Primary">
+    <button class="navBtn active" data-target="view-search">Search</button>
+    <button class="navBtn" data-target="view-prices">Prices</button>
+    <button class="navBtn" data-target="view-alerts">Alerts</button>
+    <button class="navBtn" data-target="view-saved">Saved</button>
+  </nav>
+
   <script>
-    // ✅ UPDATED to your current Apps Script deployment
-    const API_URL = "https://script.google.com/macros/s/AKfycbyfFFhZUpuqj-S59anNujeWG_v3MVaKaOxwC_ollZTT2GfXeShjiX0pZiWf28nH60WF_Q/exec";
-
-    // Register SW
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
+    // PWA service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
     }
 
-    // Theme button (v5 style)
-    const THEME_KEY = "waxalert_theme";
-    const btnTheme = document.getElementById("btnTheme");
-
-    function applyTheme(theme){
-      document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "dark");
-      btnTheme.textContent = theme === "light" ? "Dark" : "Light";
+    // Simple tab switching
+    const buttons = [...document.querySelectorAll('.navBtn')];
+    const views = [...document.querySelectorAll('.view')];
+    function showView(id) {
+      views.forEach(v => v.classList.toggle('active', v.id === id));
+      buttons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
+    buttons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.target)));
 
-    function getTheme(){
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "light" || saved === "dark") return saved;
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
-      return "dark";
-    }
-
-    let theme = getTheme();
-    applyTheme(theme);
-
-    btnTheme.addEventListener("click", () => {
-      theme = (theme === "dark") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, theme);
-      applyTheme(theme);
+    // Placeholder “search” UI (we’ll replace with Apps Script calls)
+    const resultsEl = document.getElementById('results');
+    document.getElementById('btnSearch').addEventListener('click', () => {
+      const q = document.getElementById('q').value.trim();
+      resultsEl.innerHTML = q ? `
+        <div class="card"><b>Example result</b><div class="muted">${q}</div></div>
+        <div class="card"><b>Next step</b><div class="muted">Connect this to Apps Script + Sheets API.</div></div>
+      ` : '';
     });
-
-    async function api(action, payload) {
-      const res = await fetch(API_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, payload })
-      });
-      return await res.json();
-    }
-
-    // Typeahead
-    let PRODUCTS = [];
-    let SELECTED = null;
-
-    // ✅ Make DevTools checks unambiguous
-    window.PRODUCTS = PRODUCTS;
-    window.SELECTED = SELECTED;
-
-    const q = document.getElementById("q");
-    const suggestions = document.getElementById("suggestions");
-    const results = document.getElementById("results");
-    const catalogStatus = document.getElementById("catalogStatus");
-
-    function norm(s){ return String(s||"").toLowerCase(); }
-    function escapeHTML(s){
-      return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-    }
-
-    function renderSuggestions(list){
-      if (!list.length) { suggestions.innerHTML = ""; return; }
-      suggestions.innerHTML = list.slice(0, 12).map(p => `
-        <div class="suggestion" data-code="${escapeHTML(p.code)}">
-          <b>${escapeHTML(p.displayName)}</b>
-        </div>
-      `).join("");
-    }
-
-    q.addEventListener("input", () => {
-      SELECTED = null;
-      window.SELECTED = null;
-
-      const v = norm(q.value).trim();
-      if (!v) { suggestions.innerHTML = ""; return; }
-
-      const matches = PRODUCTS.filter(p => {
-        const hay = norm(p.displayName) + " " + norm(p.keywords) + " " + norm(p.code);
-        return hay.includes(v);
-      });
-
-      renderSuggestions(matches);
-    });
-
-    suggestions.addEventListener("click", (e) => {
-      const el = e.target.closest("[data-code]");
-      if (!el) return;
-
-      SELECTED = PRODUCTS.find(p => p.code === el.dataset.code);
-      window.SELECTED = SELECTED;
-
-      if (!SELECTED) return;
-
-      q.value = SELECTED.displayName;
-      suggestions.innerHTML = "";
-      runSearch();
-    });
-
-    async function runSearch(){
-      if (!SELECTED) return;
-
-      results.innerHTML = `<div class="card"><div class="k">Searching…</div></div>`;
-
-      const data = await api("search", {
-        q: SELECTED.displayName,
-        ebayUrl: SELECTED.ebayUrl,
-        productCode: SELECTED.code,
-        productName: SELECTED.displayName
-      });
-
-      if (!data || !data.ok) {
-        results.innerHTML = `<div class="card"><div class="k">Error</div><div class="k">${escapeHTML(data?.error || "Unknown error")}</div></div>`;
-        return;
-      }
-
-      const rows = Array.isArray(data.exportData) ? data.exportData : [];
-      const kv = rows
-        .filter(r => (String(r?.[0]||"").trim() || String(r?.[1]||"").trim()))
-        .map(r => `
-          <div class="kv">
-            <div class="k">${escapeHTML(r[0] || "")}</div>
-            <div class="v">${escapeHTML(r[1] || "")}</div>
-          </div>
-        `).join("");
-
-      const cmUrl = SELECTED.checklistUrl ? String(SELECTED.checklistUrl).trim() : "";
-      const cmBtn = cmUrl ? `
-        <a class="btnLink" href="${escapeHTML(cmUrl)}" target="_blank" rel="noopener">
-          <button class="primary" type="button">View details on ChasingMajors</button>
-        </a>
-      ` : "";
-
-      results.innerHTML = `<div class="card">${kv || `<div class="k">No results yet.</div>`}${cmBtn}</div>`;
-    }
-
-    document.getElementById("searchBtn").addEventListener("click", runSearch);
-
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      q.value = "";
-      suggestions.innerHTML = "";
-      results.innerHTML = "";
-      SELECTED = null;
-      window.SELECTED = null;
-      q.focus();
-    });
-
-    q.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") runSearch();
-    });
-
-    // Product loader (cached + refresh) + visible status
-    async function loadProducts(){
-      catalogStatus.textContent = "Loading products…";
-
-      // cached first
-      try {
-        const cached = localStorage.getItem("waxalert_products_cache_v1");
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length) {
-            PRODUCTS = parsed;
-            window.PRODUCTS = PRODUCTS;
-            catalogStatus.textContent = `Loaded ${PRODUCTS.length} products`;
-          }
-        }
-      } catch(_) {}
-
-      // refresh from API
-      try {
-        const data = await api("products", {});
-        if (data && data.ok && Array.isArray(data.products)) {
-          PRODUCTS = data.products;
-          window.PRODUCTS = PRODUCTS;
-
-          localStorage.setItem("waxalert_products_cache_v1", JSON.stringify(PRODUCTS));
-          catalogStatus.textContent = `Loaded ${PRODUCTS.length} products`;
-
-          console.log("[WaxAlert] products loaded:", PRODUCTS.length);
-        } else {
-          console.log("[WaxAlert] products response unexpected:", data);
-          if (!PRODUCTS.length) catalogStatus.textContent = "Products loaded: 0";
-        }
-      } catch (err) {
-        console.error("[WaxAlert] products load failed:", err);
-        if (!PRODUCTS.length) catalogStatus.textContent = "Products load failed";
-      }
-    }
-
-    loadProducts();
   </script>
 </body>
 </html>
