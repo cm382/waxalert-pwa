@@ -81,6 +81,7 @@
     <button class="navBtn" data-target="view-saved">Saved</button>
   </nav>
 
+  <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbyK9zQ1Q_kmZ_cpDWqdmxvOGjWhALwLfN74JDPZKcj-qkkJaTv6LIAaDNCabrRT00rg/exec";
 
 async function api(action, payload) {
@@ -92,7 +93,7 @@ async function api(action, payload) {
   return await res.json();
 }
 
-  <script>
+    
     // PWA service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
