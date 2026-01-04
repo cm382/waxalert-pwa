@@ -207,11 +207,12 @@
     document.getElementById("buildTag").textContent = "v" + APP_VERSION;
 
     // ---------------- PWA SERVICE WORKER ----------------
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () =>
-  navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`));
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () =>
+    navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+  );
+}
 
-    }
 
     // ---------------- NAV ----------------
     const buttons = [...document.querySelectorAll(".navBtn")];
