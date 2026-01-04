@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WaxAlert</title>
 
-  <!-- Fonts (matches WaxAlert.com) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
-
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -30,11 +24,8 @@
 
       --shadow: 0 10px 30px rgba(0,0,0,.25);
       --radius:16px;
-
-      --accent:#ffffff;
     }
 
-    /* Light mode: blue accents for switch + primary buttons */
     [data-theme="light"]{
       --bg:#ffffff;
       --text:#111111;
@@ -43,8 +34,7 @@
       --border:rgba(0,0,0,.12);
       --input:#ffffff;
 
-      --accent:#0A66FF;
-      --primary: var(--accent);
+      --primary:#111111;
       --primaryText:#ffffff;
 
       --shadow: 0 10px 30px rgba(0,0,0,.08);
@@ -66,7 +56,7 @@
 
     .top{
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:space-between;
       gap:12px;
       margin-bottom:14px;
@@ -74,10 +64,24 @@
 
     .brand h1{
       margin:0;
-      font-family: "Bangers", system-ui, -apple-system, Arial, sans-serif;
-      font-size:34px;
-      letter-spacing:1px;
-      line-height:1;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+    .brand .ver{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .btnSmall{
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      border-radius:999px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-size:13px;
+      white-space:nowrap;
     }
 
     .card{
@@ -123,11 +127,7 @@
       font-size:16px;
     }
 
-    .primary{
-      background:var(--primary);
-      color:var(--primaryText);
-    }
-
+    .primary{ background:var(--primary); color:var(--primaryText); }
     .ghost{
       background:transparent;
       border:1px solid var(--border);
@@ -141,7 +141,6 @@
       gap:10px;
     }
 
-    /* Suggestions (DisplayName only) */
     .suggestion{
       cursor:pointer;
       padding:12px;
@@ -149,13 +148,8 @@
       background:var(--card);
       border:1px solid var(--border);
     }
-    .suggestion b{
-      display:block;
-      font-size:15px;
-      line-height:1.2;
-    }
+    .suggestion b{ display:block; font-size:15px; line-height:1.2; }
 
-    /* Export rows */
     .kv{
       display:grid;
       grid-template-columns: 1fr auto;
@@ -168,66 +162,6 @@
     .v{font-weight:900;text-align:right}
 
     .btnLink{ text-decoration:none; display:block; margin-top:12px; }
-
-    /* Toggle switch */
-    .themeWrap{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      user-select:none;
-      white-space:nowrap;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .switch{
-      position:relative;
-      width:46px;
-      height:26px;
-      display:inline-block;
-    }
-    .switch input{
-      opacity:0;
-      width:0;
-      height:0;
-    }
-    .slider{
-      position:absolute;
-      cursor:pointer;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(255,255,255,.18);
-      border:1px solid var(--border);
-      transition:.2s;
-      border-radius:999px;
-    }
-    [data-theme="light"] .slider{
-      background: rgba(10,102,255,.20);
-      border-color: rgba(10,102,255,.35);
-    }
-
-    .slider:before{
-      position:absolute;
-      content:"";
-      height:20px;
-      width:20px;
-      left:3px;
-      top:50%;
-      transform:translateY(-50%);
-      background:#ffffff; /* default knob */
-      border-radius:999px;
-      transition:.2s;
-    }
-    [data-theme="light"] .slider:before{
-      background: var(--accent); /* blue knob in light */
-    }
-
-    /* Checked = dark mode (knob moves right) */
-    .switch input:checked + .slider:before{
-      transform:translate(20px, -50%);
-    }
-
-    @media (max-width: 380px){
-      .brand h1{ font-size:30px; }
-    }
   </style>
 </head>
 
@@ -236,27 +170,20 @@
     <div class="top">
       <div class="brand">
         <h1>WaxAlert</h1>
+        <div class="ver">v5</div>
       </div>
-
-      <div class="themeWrap">
-        <span>Light</span>
-        <label class="switch" title="Toggle light/dark mode">
-          <input id="themeToggle" type="checkbox" />
-          <span class="slider"></span>
-        </label>
-        <span>Dark</span>
-      </div>
+      <button class="btnSmall" id="btnTheme">Light</button>
     </div>
 
     <div class="card">
-      <div class="help">Type and tap a match. (Keywords power matching, but we only show product names.)</div>
+      <div class="help">Start typing and tap a match. Matching uses your Products keywords, but only the product name is shown.</div>
 
       <input id="q" placeholder="Ex: 2025-26 Topps Midnight Basketball" />
       <div class="list" id="suggestions"></div>
 
       <div class="row">
         <button class="primary" id="searchBtn">Search</button>
-        <button class="ghost" id="clearBtn">Clear</button>
+        <button class="ghost" id="clearBtn">Clear Text</button>
       </div>
     </div>
 
@@ -264,49 +191,49 @@
   </main>
 
   <script>
-    // If you created a new Apps Script deployment, update this URL.
-    const API_URL = "https://script.google.com/macros/s/AKfycbyfFFhZUpuqj-S59anNujeWG_v3MVaKaOxwC_ollZTT2GfXeShjiX0pZiWf28nH60WF_Q/exec";
+    // Update this only if your Apps Script /exec changed
+    const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
 
-    // Service worker
+    // Register SW
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
     }
 
-    async function api(action, payload) {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, payload })
-      });
-      return await res.json();
-    }
-
-    // ----- THEME SWITCH -----
+    // Theme button (v5 style)
     const THEME_KEY = "waxalert_theme";
-    const toggle = document.getElementById("themeToggle");
+    const btnTheme = document.getElementById("btnTheme");
 
-    function applyTheme(theme) {
+    function applyTheme(theme){
       document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "dark");
-      toggle.checked = (theme === "dark"); // checked = dark
+      btnTheme.textContent = theme === "light" ? "Dark" : "Light";
     }
 
-    function detectTheme() {
+    function getTheme(){
       const saved = localStorage.getItem(THEME_KEY);
       if (saved === "light" || saved === "dark") return saved;
       if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
       return "dark";
     }
 
-    let theme = detectTheme();
+    let theme = getTheme();
     applyTheme(theme);
 
-    toggle.addEventListener("change", () => {
-      theme = toggle.checked ? "dark" : "light";
+    btnTheme.addEventListener("click", () => {
+      theme = (theme === "dark") ? "light" : "dark";
       localStorage.setItem(THEME_KEY, theme);
       applyTheme(theme);
     });
 
-    // ----- TYPEAHEAD -----
+    async function api(action, payload) {
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, payload })
+      });
+      return await res.json();
+    }
+
+    // Typeahead
     let PRODUCTS = [];
     let SELECTED = null;
 
@@ -314,17 +241,14 @@
     const suggestions = document.getElementById("suggestions");
     const results = document.getElementById("results");
 
-    function norm(s){ return String(s || "").toLowerCase(); }
-
+    function norm(s){ return String(s||"").toLowerCase(); }
     function escapeHTML(s){
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
+      return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
     }
 
-    function renderSuggestions(list) {
+    function renderSuggestions(list){
       if (!list.length) { suggestions.innerHTML = ""; return; }
-      suggestions.innerHTML = list.slice(0, 10).map(p => `
+      suggestions.innerHTML = list.slice(0, 12).map(p => `
         <div class="suggestion" data-code="${escapeHTML(p.code)}">
           <b>${escapeHTML(p.displayName)}</b>
         </div>
@@ -336,9 +260,10 @@
       const v = norm(q.value).trim();
       if (!v) { suggestions.innerHTML = ""; return; }
 
-      const matches = PRODUCTS.filter(p =>
-        (norm(p.displayName) + " " + norm(p.keywords) + " " + norm(p.code)).includes(v)
-      );
+      const matches = PRODUCTS.filter(p => {
+        const hay = norm(p.displayName) + " " + norm(p.keywords) + " " + norm(p.code);
+        return hay.includes(v);
+      });
 
       renderSuggestions(matches);
     });
@@ -355,24 +280,24 @@
       runSearch();
     });
 
-    async function runSearch() {
+    async function runSearch(){
       if (!SELECTED) return;
 
       results.innerHTML = `<div class="card"><div class="k">Searching…</div></div>`;
 
-      const res = await api("search", {
+      const data = await api("search", {
         q: SELECTED.displayName,
         ebayUrl: SELECTED.ebayUrl,
         productCode: SELECTED.code,
         productName: SELECTED.displayName
       });
 
-      if (!res || !res.ok) {
-        results.innerHTML = `<div class="card"><div class="k">Error</div><div class="k">${escapeHTML(res?.error || "Unknown error")}</div></div>`;
+      if (!data || !data.ok) {
+        results.innerHTML = `<div class="card"><div class="k">Error</div><div class="k">${escapeHTML(data?.error || "Unknown error")}</div></div>`;
         return;
       }
 
-      const rows = Array.isArray(res.exportData) ? res.exportData : [];
+      const rows = Array.isArray(data.exportData) ? data.exportData : [];
       const kv = rows
         .filter(r => (String(r?.[0]||"").trim() || String(r?.[1]||"").trim()))
         .map(r => `
@@ -385,7 +310,7 @@
       const cmUrl = SELECTED.checklistUrl ? String(SELECTED.checklistUrl).trim() : "";
       const cmBtn = cmUrl ? `
         <a class="btnLink" href="${escapeHTML(cmUrl)}" target="_blank" rel="noopener">
-          <button class="primary" type="button">View on ChasingMajors</button>
+          <button class="primary" type="button">View details on ChasingMajors</button>
         </a>
       ` : "";
 
@@ -406,39 +331,25 @@
       if (e.key === "Enter") runSearch();
     });
 
-    // ----- PRODUCT CATALOG LOADER (robust + cached) -----
-    // This is the piece that restores typeahead reliably.
-    function extractProducts(data) {
-      // Accept multiple possible shapes to avoid breakage.
-      if (Array.isArray(data?.products)) return data.products;
-      if (Array.isArray(data?.data?.products)) return data.data.products;
-      if (Array.isArray(data?.items)) return data.items;
-      if (Array.isArray(data)) return data;
-      return [];
-    }
-
-    async function loadProducts() {
-      // 1) fast path: local cache
+    // Product loader (v5 style: cached + refresh)
+    async function loadProducts(){
+      // cached first
       try {
         const cached = localStorage.getItem("waxalert_products_cache_v1");
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length) PRODUCTS = parsed;
+          if (Array.isArray(parsed)) PRODUCTS = parsed;
         }
       } catch(_) {}
 
-      // 2) refresh from API
+      // refresh from API
       try {
         const data = await api("products", {});
-        const list = extractProducts(data);
-
-        if (list && list.length) {
-          PRODUCTS = list;
-          localStorage.setItem("waxalert_products_cache_v1", JSON.stringify(list));
+        if (data && data.ok && Array.isArray(data.products)) {
+          PRODUCTS = data.products;
+          localStorage.setItem("waxalert_products_cache_v1", JSON.stringify(PRODUCTS));
         }
-      } catch (e) {
-        // keep cached PRODUCTS if API fails
-      }
+      } catch(_) {}
     }
 
     loadProducts();
