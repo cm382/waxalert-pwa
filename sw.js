@@ -1,4 +1,4 @@
-const CACHE = "waxalert-v2";
+const CACHE = "waxalert-v3";
 const APP_SHELL = [
   "/",
   "/index.html",
