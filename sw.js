@@ -1,59 +1,29 @@
-// WaxAlert PWA Service Worker (v5)
-// - Cache app shell
-// - Never cache POST
-// - Never cache script.google.com
-const CACHE = "waxalert-v5";
+const CACHE = 'waxalert-v1';
+const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
-const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/manifest.webmanifest",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-];
-
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map((k) => (k !== CACHE ? caches.delete(k) : null)));
-    await self.clients.claim();
-  })());
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  if (req.method !== "GET") {
-    event.respondWith(fetch(req));
+  // App shell: cache-first
+  if (APP_SHELL.some(p => new URL(req.url).pathname === p)) {
+    event.respondWith(caches.match(req).then(r => r || fetch(req)));
     return;
   }
 
-  const url = new URL(req.url);
-
-  if (url.hostname === "script.google.com") {
-    event.respondWith(fetch(req));
-    return;
-  }
-
-  if (APP_SHELL.includes(url.pathname) || url.pathname.startsWith("/icons/")) {
-    event.respondWith(caches.match(req).then((r) => r || fetch(req)));
-    return;
-  }
-
+  // Everything else: network-first, fallback to cache
   event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res && res.status === 200) {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-        }
-        return res;
-      })
-      .catch(() => caches.match(req))
+    fetch(req).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE).then(cache => cache.put(req, copy));
+      return res;
+    }).catch(() => caches.match(req))
   );
 });
