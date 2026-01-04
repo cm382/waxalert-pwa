@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WaxAlert</title>
 
+  <!-- Fonts (matches WaxAlert.com) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+
   <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -13,16 +18,35 @@
 
   <style>
     :root{
-      --bg:#0b0b0b; --text:#fff; --muted:rgba(255,255,255,.72);
-      --card:rgba(255,255,255,.08); --border:rgba(255,255,255,.12);
-      --input:#111; --primary:#fff; --primaryText:#000;
+      --bg:#0b0b0b;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.72);
+      --card:rgba(255,255,255,.08);
+      --border:rgba(255,255,255,.12);
+      --input:#111;
+
+      --primary:#ffffff;
+      --primaryText:#000000;
+
       --shadow: 0 10px 30px rgba(0,0,0,.25);
       --radius:16px;
+
+      /* Accent (default dark: white primary is fine) */
+      --accent:#ffffff;
     }
+
+    /* Light mode: blue accents for switch + primary buttons */
     [data-theme="light"]{
-      --bg:#ffffff; --text:#111; --muted:rgba(0,0,0,.62);
-      --card:rgba(0,0,0,.04); --border:rgba(0,0,0,.12);
-      --input:#fff; --primary:#111; --primaryText:#fff;
+      --bg:#ffffff;
+      --text:#111111;
+      --muted:rgba(0,0,0,.62);
+      --card:rgba(0,0,0,.04);
+      --border:rgba(0,0,0,.12);
+      --input:#ffffff;
+
+      --accent:#0A66FF;            /* blue */
+      --primary: var(--accent);    /* blue button */
+      --primaryText:#ffffff;
       --shadow: 0 10px 30px rgba(0,0,0,.08);
     }
 
@@ -37,12 +61,12 @@
     main{
       max-width:900px;
       margin:0 auto;
-      padding:16px 16px 54px; /* extra bottom space for version tag */
+      padding:16px;
     }
 
     .top{
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       justify-content:space-between;
       gap:12px;
       margin-bottom:14px;
@@ -50,14 +74,10 @@
 
     .brand h1{
       margin:0;
-      font-size:22px;
-      letter-spacing:.2px;
-    }
-    .brand .tagline{
-      margin-top:4px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.25;
+      font-family: "Bangers", system-ui, -apple-system, Arial, sans-serif;
+      font-size:34px;
+      letter-spacing:1px;
+      line-height:1;
     }
 
     .card{
@@ -66,6 +86,13 @@
       border-radius:var(--radius);
       padding:14px;
       box-shadow: var(--shadow);
+    }
+
+    .help{
+      font-size:13px;
+      line-height:1.35;
+      color:var(--muted);
+      margin-bottom:10px;
     }
 
     input{
@@ -93,16 +120,19 @@
       font-weight:800;
       cursor:pointer;
       border:0;
+      font-size:16px; /* match input text size */
     }
+
     .primary{
       background:var(--primary);
       color:var(--primaryText);
     }
+
     .ghost{
       background:transparent;
       border:1px solid var(--border);
       color:var(--text);
-      font-weight:700;
+      font-weight:800;
     }
 
     .list{
@@ -140,7 +170,7 @@
     /* CM button link wrapper */
     .btnLink{ text-decoration:none; display:block; margin-top:12px; }
 
-    /* Toggle switch */
+    /* Toggle switch (uses accent in light mode) */
     .themeWrap{
       display:flex;
       align-items:center;
@@ -171,8 +201,10 @@
       border-radius:999px;
     }
     [data-theme="light"] .slider{
-      background: rgba(0,0,0,.10);
+      background: rgba(10,102,255,.20); /* soft blue track */
+      border-color: rgba(10,102,255,.35);
     }
+
     .slider:before{
       position:absolute;
       content:"";
@@ -181,33 +213,27 @@
       left:3px;
       top:50%;
       transform:translateY(-50%);
-      background: var(--primary);
+      background: var(--primary); /* white in dark, blue in light */
       border-radius:999px;
       transition:.2s;
     }
+
+    /* In dark mode, knob is white when unchecked; keep it looking crisp */
+    :root .slider:before{
+      background:#ffffff;
+    }
+    /* In light mode, make knob blue to match accent */
+    [data-theme="light"] .slider:before{
+      background: var(--accent);
+    }
+
+    /* Checked = dark mode */
     .switch input:checked + .slider:before{
       transform:translate(20px, -50%);
     }
 
-    /* Bottom version label */
-    .versionBadge{
-      position:fixed;
-      left:0; right:0;
-      bottom:10px;
-      display:flex;
-      justify-content:center;
-      pointer-events:none;
-      z-index:9999;
-    }
-    .versionBadge span{
-      pointer-events:none;
-      font-size:11px;
-      color:var(--muted);
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding:6px 10px;
-      border-radius:999px;
-      backdrop-filter: blur(6px);
+    @media (max-width: 380px){
+      .brand h1{ font-size:30px; }
     }
   </style>
 </head>
@@ -217,9 +243,6 @@
     <div class="top">
       <div class="brand">
         <h1>WaxAlert</h1>
-        <div class="tagline">
-          Type and tap a match. (Keywords power matching, but we only show product names.)
-        </div>
       </div>
 
       <div class="themeWrap">
@@ -233,7 +256,10 @@
     </div>
 
     <div class="card">
+      <div class="help">Type and tap a match. (Keywords power matching, but we only show product names.)</div>
+
       <input id="q" placeholder="Ex: 2025-26 Topps Midnight Basketball" />
+
       <div class="list" id="suggestions"></div>
 
       <div class="row">
@@ -245,22 +271,15 @@
     <div class="list" id="results"></div>
   </main>
 
-  <div class="versionBadge"><span id="versionText"></span></div>
-
   <script>
-    // ----- CONFIG -----
     // Update API_URL only if you created a brand new Apps Script deployment.
     const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
-
-    const APP_VERSION = "v5";
-    document.getElementById("versionText").textContent = APP_VERSION;
 
     // Service worker (safe)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
     }
 
-    // ----- API -----
     async function api(action, payload) {
       const res = await fetch(API_URL, {
         method: "POST",
@@ -282,7 +301,6 @@
     function detectTheme() {
       const saved = localStorage.getItem(THEME_KEY);
       if (saved === "light" || saved === "dark") return saved;
-      // default: match OS, else dark
       if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
       return "dark";
     }
@@ -306,26 +324,27 @@
 
     function norm(s){ return String(s || "").toLowerCase(); }
 
-    function renderSuggestions(list) {
-      if (!list.length) { suggestions.innerHTML = ""; return; }
-      // DisplayName ONLY (keywords never shown)
-      suggestions.innerHTML = list.slice(0, 10).map(p => `
-        <div class="suggestion" data-code="${p.code}">
-          <b>${escapeHTML(p.displayName)}</b>
-        </div>
-      `).join("");
-    }
-
     function escapeHTML(s){
       return String(s).replace(/[&<>"']/g, m => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
     }
 
+    function renderSuggestions(list) {
+      if (!list.length) { suggestions.innerHTML = ""; return; }
+      // DisplayName ONLY (keywords never shown)
+      suggestions.innerHTML = list.slice(0, 10).map(p => `
+        <div class="suggestion" data-code="${escapeHTML(p.code)}">
+          <b>${escapeHTML(p.displayName)}</b>
+        </div>
+      `).join("");
+    }
+
     q.addEventListener("input", () => {
       SELECTED = null;
       const v = norm(q.value).trim();
       if (!v) { suggestions.innerHTML = ""; return; }
+
       const matches = PRODUCTS.filter(p =>
         (norm(p.displayName) + " " + norm(p.keywords) + " " + norm(p.code)).includes(v)
       );
@@ -335,6 +354,7 @@
     suggestions.addEventListener("click", (e) => {
       const el = e.target.closest("[data-code]");
       if (!el) return;
+
       SELECTED = PRODUCTS.find(p => p.code === el.dataset.code);
       if (!SELECTED) return;
 
@@ -370,6 +390,7 @@
           </div>
         `).join("");
 
+      // Uses Products Column E -> checklistUrl (CM URL)
       const cmUrl = SELECTED.checklistUrl ? String(SELECTED.checklistUrl).trim() : "";
       const cmBtn = cmUrl ? `
         <a class="btnLink" href="${escapeHTML(cmUrl)}" target="_blank" rel="noopener">
