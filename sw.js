@@ -28,7 +28,6 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Never cache non-GET (Apps Script calls are POST)
   if (req.method !== "GET") {
     event.respondWith(fetch(req));
     return;
@@ -36,19 +35,16 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // Never cache Apps Script responses
   if (url.hostname === "script.google.com") {
     event.respondWith(fetch(req));
     return;
   }
 
-  // Cache-first for app shell + icons
   if (APP_SHELL.includes(url.pathname) || url.pathname.startsWith("/icons/")) {
     event.respondWith(caches.match(req).then((r) => r || fetch(req)));
     return;
   }
 
-  // Network-first for everything else
   event.respondWith(
     fetch(req)
       .then((res) => {
