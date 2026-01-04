@@ -191,8 +191,8 @@
   </main>
 
   <script>
-    // Update this only if your Apps Script /exec changed
-    const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
+    // ✅ UPDATED to your current Apps Script deployment
+    const API_URL = "https://script.google.com/macros/s/AKfycbyfFFhZUpuqj-S59anNujeWG_v3MVaKaOxwC_ollZTT2GfXeShjiX0pZiWf28nH60WF_Q/exec";
 
     // Register SW
     if ("serviceWorker" in navigator) {
@@ -331,7 +331,7 @@
       if (e.key === "Enter") runSearch();
     });
 
-    // Product loader (v5 style: cached + refresh)
+    // Product loader (cached + refresh)
     async function loadProducts(){
       // cached first
       try {
