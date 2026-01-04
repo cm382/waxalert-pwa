@@ -13,107 +13,136 @@
   <meta name="theme-color" content="#0b0b0b">
 
   <style>
-    :root { --navH: 62px; --radius: 14px; }
+    :root {
+      --navH: 62px;
+      --radius: 14px;
+
+      /* Dark defaults */
+      --bg: #0b0b0b;
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.78);
+      --cardBg: rgba(255,255,255,0.08);
+      --cardBorder: rgba(255,255,255,0.12);
+      --inputBg: #111;
+      --inputBorder: rgba(255,255,255,0.16);
+      --ghostBorder: rgba(255,255,255,0.20);
+      --primaryBg: #ffffff;
+      --primaryText: #000000;
+    }
+
+    /* Light mode variables */
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --text: #111111;
+      --muted: rgba(0,0,0,0.62);
+      --cardBg: rgba(0,0,0,0.04);
+      --cardBorder: rgba(0,0,0,0.10);
+      --inputBg: #ffffff;
+      --inputBorder: rgba(0,0,0,0.18);
+      --ghostBorder: rgba(0,0,0,0.20);
+      --primaryBg: #111111;
+      --primaryText: #ffffff;
+    }
+
     html, body { height: 100%; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #0b0b0b;
-      color: #fff;
+      background: var(--bg);
+      color: var(--text);
     }
+
     .content {
-      padding: 16px 16px calc(var(--navH) + 18px);
+      padding: 16px;
       max-width: 900px;
       margin: 0 auto;
     }
-    .row { display:flex; gap:10px; align-items:center; }
-    .rowSplit { display:flex; gap:10px; align-items:center; }
-    .rowSplit > * { flex: 1; }
+
+    .topBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    .small { opacity: 0.75; font-size: 12px; }
+    .muted { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .spacer { height: 12px; }
+
     .card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--cardBg);
+      border: 1px solid var(--cardBorder);
       border-radius: 16px;
       padding: 14px;
     }
-    h2 { margin: 0 0 8px; font-size: 20px; }
-    .muted { opacity: 0.8; font-size: 13px; line-height: 1.35; }
-    .small { opacity: 0.7; font-size: 12px; }
-    .spacer { height: 12px; }
 
     input {
       width: 100%;
       box-sizing: border-box;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background:#111;
-      color:#fff;
-      font-size:16px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      font-size: 16px;
       outline: none;
     }
+
+    .rowSplit { display:flex; gap:10px; align-items:center; }
+    .rowSplit > * { flex: 1; }
 
     button.primary {
       width:100%;
       padding: 12px;
-      border:0;
+      border: 0;
       border-radius: 12px;
-      background:#fff;
-      color:#000;
-      font-weight:700;
-      cursor:pointer;
+      background: var(--primaryBg);
+      color: var(--primaryText);
+      font-weight: 800;
+      cursor: pointer;
     }
+
     button.ghost {
       width:100%;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.20);
+      border: 1px solid var(--ghostBorder);
       background: transparent;
-      color:#fff;
-      cursor:pointer;
+      color: var(--text);
+      cursor: pointer;
     }
+
+    button.iconBtn {
+      border: 1px solid var(--cardBorder);
+      background: var(--cardBg);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
     button:disabled { opacity: 0.6; cursor: default; }
 
     .list { margin-top: 12px; display: grid; gap: 10px; }
 
-    /* Suggestions */
+    /* Suggestions (DisplayName only) */
     .suggestion { cursor: pointer; }
     .suggestion .title { font-weight: 800; font-size: 15px; line-height: 1.2; }
-
-    /* Bottom nav */
-    .bottomNav {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: var(--navH);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      padding: 10px 10px max(10px, env(safe-area-inset-bottom));
-      background: #0b0b0b;
-      border-top: 1px solid rgba(255,255,255,0.12);
-      z-index: 9999;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    @media (min-width: 900px) {
-      .bottomNav { left: 50%; transform: translateX(-50%); }
-    }
-    .navBtn {
-      border: 0;
-      border-radius: var(--radius);
-      background: transparent;
-      color: #fff;
-      font-size: 13px;
-      padding: 10px 6px;
-      cursor: pointer;
-      opacity: 0.75;
-    }
-    .navBtn.active {
-      background: rgba(255,255,255,0.12);
-      opacity: 1;
-    }
-
-    .view { display:none; }
-    .view.active { display:block; }
 
     /* Key/value output */
     .kv {
@@ -121,88 +150,57 @@
       grid-template-columns: 1fr auto;
       gap: 10px;
       padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
+      border-bottom: 1px solid var(--cardBorder);
     }
     .kv:last-child { border-bottom: 0; }
     .k { opacity: 0.85; }
     .v { font-weight: 800; text-align: right; }
-    a { color: #fff; }
+
+    a { color: inherit; }
   </style>
 </head>
 
 <body>
   <main class="content">
-    <!-- SEARCH -->
-    <section class="view active" id="view-search">
-      <div class="card">
-        <div class="row" style="justify-content: space-between;">
-          <h2>WaxAlert</h2>
-          <div class="small" id="buildTag"></div>
-        </div>
 
-        <div class="muted">
-          Start typing and tap a match. (Behind the scenes we’re using your Products keywords, but we only show the product name.)
-        </div>
-
-        <div class="spacer"></div>
-
-        <input id="q" placeholder="Ex: 2025-26 Topps Chrome Baseball, Panini Prism, etc." />
-
-        <!-- Typeahead results -->
-        <div class="list" id="suggestions"></div>
-
-        <div class="spacer"></div>
-
-        <div class="rowSplit">
-          <button class="primary" id="btnSearch">Search</button>
-          <button class="ghost" id="btnClear">Clear Text</button>
-        </div>
+    <div class="topBar">
+      <div class="brand">
+        <h1>WaxAlert</h1>
+        <div class="small" id="buildTag"></div>
       </div>
 
-      <div class="list" id="results"></div>
-    </section>
+      <button class="iconBtn" id="btnTheme" title="Toggle Light/Dark">Theme</button>
+    </div>
 
-    <!-- PRICES -->
-    <section class="view" id="view-prices">
-      <div class="card">
-        <h2>Prices</h2>
-        <div class="muted">Next: format the Export output into a cleaner “Avg / Count / Low / High” card.</div>
+    <div class="card">
+      <div class="muted">
+        Start typing and tap a match. Matching uses your Products keywords, but only the product name is shown.
       </div>
-    </section>
 
-    <!-- ALERTS -->
-    <section class="view" id="view-alerts">
-      <div class="card">
-        <h2>Alerts</h2>
-        <div class="muted">Later: “notify me under $X” (Sheets + Apps Script trigger).</div>
-      </div>
-    </section>
+      <div class="spacer"></div>
 
-    <!-- SAVED / DEBUG -->
-    <section class="view" id="view-saved">
-      <div class="card">
-        <h2>Export Debug</h2>
-        <div class="muted">Pulls current Export!A1:B20 without running a new search.</div>
-        <div class="spacer"></div>
-        <button class="primary" id="btnExport">Refresh Export</button>
+      <input id="q" placeholder="Ex: 2025-26 Topps Chrome Baseball, Panini Prism, etc." />
+
+      <!-- Typeahead results -->
+      <div class="list" id="suggestions"></div>
+
+      <div class="spacer"></div>
+
+      <div class="rowSplit">
+        <button class="primary" id="btnSearch">Search</button>
+        <button class="ghost" id="btnClear">Clear Text</button>
       </div>
-      <div class="list" id="exportView"></div>
-    </section>
+    </div>
+
+    <div class="list" id="results"></div>
+
   </main>
-
-  <nav class="bottomNav" aria-label="Primary">
-    <button class="navBtn active" data-target="view-search">Search</button>
-    <button class="navBtn" data-target="view-prices">Prices</button>
-    <button class="navBtn" data-target="view-alerts">Alerts</button>
-    <button class="navBtn" data-target="view-saved">Saved</button>
-  </nav>
 
   <script>
     // ---------------- CONFIG ----------------
-    // Update this only if your Apps Script /exec changed (new deployment).
     const API_URL = "https://script.google.com/macros/s/AKfycbwAOfPLpnJg7W1Vwn1VWEgSSGG_6bSEtJgu9_K6HYSKZPUmw-6eaKzTWEoKO2569Qj_/exec";
 
-    // Simple version label the user asked for
+    // User requested version label
     const APP_VERSION = "5";
     document.getElementById("buildTag").textContent = "v" + APP_VERSION;
 
@@ -210,16 +208,6 @@
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
     }
-
-    // ---------------- NAV ----------------
-    const buttons = [...document.querySelectorAll(".navBtn")];
-    const views = [...document.querySelectorAll(".view")];
-    function showView(id) {
-      views.forEach(v => v.classList.toggle("active", v.id === id));
-      buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
-    buttons.forEach(btn => btn.addEventListener("click", () => showView(btn.dataset.target)));
 
     // ---------------- HELPERS ----------------
     function escapeHTML(s){
@@ -238,31 +226,41 @@
       return await res.json();
     }
 
-    function exportCardHTML(exportData, ebaySoldUrl) {
-      const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
-        .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
+    // ---------------- THEME TOGGLE ----------------
+    const THEME_KEY = "waxalert_theme";
+    const btnTheme = document.getElementById("btnTheme");
 
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k || "")}</div>
-          <div class="v">${escapeHTML(v || "")}</div>
-        </div>
-      `).join("");
-
-      const link = ebaySoldUrl ? `
-        <div class="spacer"></div>
-        <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
-      ` : "";
-
-      return `
-        <div class="card">
-          ${kvs || `<div class="muted">No export data returned yet.</div>`}
-          ${link}
-        </div>
-      `;
+    function applyTheme(theme) {
+      if (theme === "light") {
+        document.documentElement.setAttribute("data-theme", "light");
+      } else if (theme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme"); // default (dark vars)
+      }
     }
+
+    function getPreferredTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "light" || saved === "dark") return saved;
+      // Default: match OS preference if available, otherwise dark
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
+      return "dark";
+    }
+
+    function toggleTheme() {
+      const cur = getPreferredTheme();
+      const next = (cur === "dark") ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+      btnTheme.textContent = (next === "dark") ? "Dark" : "Light";
+    }
+
+    // init theme
+    const initTheme = getPreferredTheme();
+    applyTheme(initTheme);
+    btnTheme.textContent = (initTheme === "dark") ? "Dark" : "Light";
+    btnTheme.addEventListener("click", toggleTheme);
 
     // ---------------- TYPEAHEAD CATALOG ----------------
     let PRODUCT_CATALOG = [];
@@ -281,7 +279,6 @@
         suggestionsEl.innerHTML = "";
         return;
       }
-
       // Show ONLY DisplayName
       suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
         <div class="card suggestion" data-code="${escapeHTML(p.code)}">
@@ -294,18 +291,15 @@
       const t = normalize(q).trim();
       if (!t) return [];
 
-      // Filter by DisplayName + Keywords + Code, but don't display keywords
+      // Filter by DisplayName + Keywords + Code (but do not display keywords)
       return PRODUCT_CATALOG.filter(p => {
-        const hay =
-          normalize(p.displayName) + " " +
-          normalize(p.keywords) + " " +
-          normalize(p.code);
+        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
         return hay.includes(t);
       });
     }
 
     async function loadCatalog() {
-      // Fast load from cache
+      // Cached catalog for speed
       const cached = localStorage.getItem("waxalert_products_v1");
       if (cached) {
         try { PRODUCT_CATALOG = JSON.parse(cached) || []; } catch(e) {}
@@ -319,18 +313,17 @@
           localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
         }
       } catch (e) {
-        // ignore; cached still works
+        // cached still works
       }
     }
 
     // Typing shows suggestions; selection cleared
     qInput.addEventListener("input", () => {
       setSelectedProduct(null);
-      const q = qInput.value.trim();
-      renderSuggestions(filterCatalog(q));
+      renderSuggestions(filterCatalog(qInput.value.trim()));
     });
 
-    // Tap suggestion => select product, fill input with DisplayName, run search using its ebayUrl
+    // Tap suggestion => select product, fill input, run search using its ebayUrl
     suggestionsEl.addEventListener("click", (e) => {
       const card = e.target.closest("[data-code]");
       if (!card) return;
@@ -345,6 +338,40 @@
       runSearch(product.displayName, product);
     });
 
+    // ---------------- RESULTS RENDERING ----------------
+    // Removed: "Open eBay sold search"
+    // Added: "View on ChasingMajors" button (uses Products column E / checklistUrl)
+
+    function exportCardHTML(exportData, selectedProduct) {
+      const rows = Array.isArray(exportData) ? exportData : [];
+      const cleaned = rows
+        .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
+        .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
+
+      const kvs = cleaned.map(([k,v]) => `
+        <div class="kv">
+          <div class="k">${escapeHTML(k || "")}</div>
+          <div class="v">${escapeHTML(v || "")}</div>
+        </div>
+      `).join("");
+
+      // CM button only when we have a selected product + a CM URL
+      const cmUrl = selectedProduct && selectedProduct.checklistUrl ? String(selectedProduct.checklistUrl).trim() : "";
+      const cmButton = cmUrl ? `
+        <div class="spacer"></div>
+        <a href="${escapeHTML(cmUrl)}" target="_blank" rel="noopener" style="text-decoration:none;">
+          <button class="primary" type="button">View details on ChasingMajors</button>
+        </a>
+      ` : "";
+
+      return `
+        <div class="card">
+          ${kvs || `<div class="muted">No export data returned yet.</div>`}
+          ${cmButton}
+        </div>
+      `;
+    }
+
     // ---------------- SEARCH FLOW ----------------
     async function runSearch(q, selectedProduct) {
       q = String(q || "").trim();
@@ -354,7 +381,6 @@
 
       const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
 
-      // If selected from Products, use exact URL
       if (selectedProduct && selectedProduct.ebayUrl) {
         payload.ebayUrl = selectedProduct.ebayUrl;
         payload.productCode = selectedProduct.code;
@@ -373,15 +399,15 @@
         return;
       }
 
-      resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
+      // Use the selected product to drive the CM button.
+      // If they free-text searched without selecting, no CM button (by design).
+      resultsEl.innerHTML = exportCardHTML(data.exportData, selectedProduct);
     }
 
     document.getElementById("btnSearch").addEventListener("click", () => {
-      const q = qInput.value.trim();
-      runSearch(q, SELECTED_PRODUCT);
+      runSearch(qInput.value.trim(), SELECTED_PRODUCT);
     });
 
-    // Enter key triggers search
     qInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") runSearch(qInput.value.trim(), SELECTED_PRODUCT);
     });
@@ -393,18 +419,6 @@
       resultsEl.innerHTML = "";
       setSelectedProduct(null);
       qInput.focus();
-    });
-
-    // ---------------- EXPORT DEBUG VIEW ----------------
-    const exportEl = document.getElementById("exportView");
-    document.getElementById("btnExport").addEventListener("click", async () => {
-      exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
-      const data = await api("export", {});
-      if (!data || !data.ok) {
-        exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div></div>`;
-        return;
-      }
-      exportEl.innerHTML = exportCardHTML(data.exportData, "");
     });
 
     // init
