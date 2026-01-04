@@ -179,6 +179,8 @@
       <div class="help">Start typing and tap a match. Matching uses your Products keywords, but only the product name is shown.</div>
 
       <input id="q" placeholder="Ex: 2025-26 Topps Midnight Basketball" />
+      <div class="help" id="catalogStatus" style="margin-top:8px; margin-bottom:0;"></div>
+
       <div class="list" id="suggestions"></div>
 
       <div class="row">
@@ -237,9 +239,14 @@
     let PRODUCTS = [];
     let SELECTED = null;
 
+    // ✅ Make DevTools checks unambiguous
+    window.PRODUCTS = PRODUCTS;
+    window.SELECTED = SELECTED;
+
     const q = document.getElementById("q");
     const suggestions = document.getElementById("suggestions");
     const results = document.getElementById("results");
+    const catalogStatus = document.getElementById("catalogStatus");
 
     function norm(s){ return String(s||"").toLowerCase(); }
     function escapeHTML(s){
@@ -257,6 +264,8 @@
 
     q.addEventListener("input", () => {
       SELECTED = null;
+      window.SELECTED = null;
+
       const v = norm(q.value).trim();
       if (!v) { suggestions.innerHTML = ""; return; }
 
@@ -273,6 +282,8 @@
       if (!el) return;
 
       SELECTED = PRODUCTS.find(p => p.code === el.dataset.code);
+      window.SELECTED = SELECTED;
+
       if (!SELECTED) return;
 
       q.value = SELECTED.displayName;
@@ -324,6 +335,7 @@
       suggestions.innerHTML = "";
       results.innerHTML = "";
       SELECTED = null;
+      window.SELECTED = null;
       q.focus();
     });
 
@@ -331,14 +343,20 @@
       if (e.key === "Enter") runSearch();
     });
 
-    // Product loader (cached + refresh)
+    // Product loader (cached + refresh) + visible status
     async function loadProducts(){
+      catalogStatus.textContent = "Loading products…";
+
       // cached first
       try {
         const cached = localStorage.getItem("waxalert_products_cache_v1");
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed)) PRODUCTS = parsed;
+          if (Array.isArray(parsed) && parsed.length) {
+            PRODUCTS = parsed;
+            window.PRODUCTS = PRODUCTS;
+            catalogStatus.textContent = `Loaded ${PRODUCTS.length} products`;
+          }
         }
       } catch(_) {}
 
@@ -347,9 +365,20 @@
         const data = await api("products", {});
         if (data && data.ok && Array.isArray(data.products)) {
           PRODUCTS = data.products;
+          window.PRODUCTS = PRODUCTS;
+
           localStorage.setItem("waxalert_products_cache_v1", JSON.stringify(PRODUCTS));
+          catalogStatus.textContent = `Loaded ${PRODUCTS.length} products`;
+
+          console.log("[WaxAlert] products loaded:", PRODUCTS.length);
+        } else {
+          console.log("[WaxAlert] products response unexpected:", data);
+          if (!PRODUCTS.length) catalogStatus.textContent = "Products loaded: 0";
         }
-      } catch(_) {}
+      } catch (err) {
+        console.error("[WaxAlert] products load failed:", err);
+        if (!PRODUCTS.length) catalogStatus.textContent = "Products load failed";
+      }
     }
 
     loadProducts();
