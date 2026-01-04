@@ -200,7 +200,7 @@
 
   <script>
     // ---------------- CONFIG ----------------
-    const API_URL = "https://script.google.com/macros/s/AKfycbzbkco10xzpCxJ9yPVpGdWR6_G3GlrRlmi2T1NtwOJjBlnB4HMKFRqfm3E5FaEZ7ckc_w/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyHeOMZV8sf2XwvAKxJwVFDOxeXBiJJ2HkILf3BlkaAx7ytONz7NTwkwozQucvxEEsCig/exec;
 
     // bump this any time you deploy so you can confirm you're seeing the latest build
     const APP_VERSION = "2026-01-03-03";
@@ -208,7 +208,9 @@
 
     // ---------------- PWA SERVICE WORKER ----------------
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
+      window.addEventListener("load", () =>
+  navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`));
+
     }
 
     // ---------------- NAV ----------------
