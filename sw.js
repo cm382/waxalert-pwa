@@ -42,5 +42,34 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const url = new URL(req.u
-::contentReference[oaicite:0]{index=0}
+  const url = new URL(req.url);
+
+  // ✅ Avoid caching Apps Script / other dynamic APIs
+  // This prevents typeahead/product catalog from going stale.
+  if (url.hostname === "script.google.com") {
+    event.respondWith(fetch(req));
+    return;
+  }
+
+  // ✅ Cache-first for the app shell + icons
+  if (APP_SHELL.includes(url.pathname) || url.pathname.startsWith("/icons/")) {
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req))
+    );
+    return;
+  }
+
+  // ✅ Network-first for everything else (with cache fallback)
+  event.respondWith(
+    fetch(req)
+      .then((res) => {
+        // Only cache successful, basic responses
+        if (res && res.status === 200 && res.type === "basic") {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(req))
+  );
+});
