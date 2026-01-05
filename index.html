@@ -52,7 +52,6 @@
 
     .suggestion { cursor:pointer; }
     .suggestion .title { font-weight:700; }
-    .suggestion .meta { opacity:.8; font-size:12px; margin-top:4px; }
 
     .bottomNav {
       position:fixed;
@@ -164,7 +163,7 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v11";
+    const APP_VERSION = "v12";
     document.getElementById("buildTag").textContent = APP_VERSION;
 
     if ("serviceWorker" in navigator) {
@@ -204,12 +203,12 @@
       selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
     }
 
+    // v12: suggestions show ONLY the product displayName (no keywords)
     function renderSuggestions(list){
       if (!list.length) { suggestionsEl.innerHTML = ""; return; }
       suggestionsEl.innerHTML = list.slice(0,12).map(p => `
         <div class="card suggestion" data-code="${escapeHTML(p.code)}">
           <div class="title">${escapeHTML(p.displayName)}</div>
-          <div class="meta">${escapeHTML(p.keywords || "")}</div>
         </div>
       `).join("");
     }
@@ -329,4 +328,3 @@
   </script>
 </body>
 </html>
-
