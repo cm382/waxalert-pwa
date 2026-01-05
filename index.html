@@ -15,10 +15,27 @@
   <style>
     :root { --navH: 62px; --radius: 14px; }
     html, body { height: 100%; }
-    body { margin:0; font-family:Arial,sans-serif; background:#0b0b0b; color:#fff; }
-    .content { padding:16px 16px calc(var(--navH) + 18px); max-width:900px; margin:0 auto; }
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#0b0b0b;
+      color:#fff;
+    }
+
+    .content {
+      padding:16px 16px calc(var(--navH) + 18px);
+      max-width:900px;
+      margin:0 auto;
+    }
+
     .row { display:flex; gap:10px; align-items:center; }
-    .card { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px; }
+    .card {
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:14px;
+    }
+
     h2 { margin:0 0 10px; font-size:20px; }
     .muted { opacity:.8; font-size:13px; line-height:1.35; }
     .small { opacity:.7; font-size:12px; }
@@ -49,46 +66,46 @@
     }
 
     .list { margin-top:12px; display:grid; gap:10px; }
-
     .suggestion { cursor:pointer; }
     .suggestion .title { font-weight:700; }
 
-    /* Bottom nav (single Home icon) */
+    /* -------- Bottom Nav (v14) -------- */
+
     .bottomNav {
       position:fixed;
-      left:0; right:0; bottom:0;
+      left:0;
+      right:0;
+      bottom:0;
       height:var(--navH);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:10px 10px max(10px, env(safe-area-inset-bottom));
       background:#0b0b0b;
       border-top:1px solid rgba(255,255,255,0.12);
       z-index:9999;
-      max-width:900px;
-      margin:0 auto;
+      display:flex;
+      justify-content:center;
     }
 
-    @media (min-width:900px){
-      .bottomNav { left:50%; transform:translateX(-50%); }
+    .bottomNavInner {
+      width:100%;
+      max-width:900px;
+      padding:10px 16px max(10px, env(safe-area-inset-bottom));
+      box-sizing:border-box;
     }
 
     .navBtn {
-      width:48px;
-      height:48px;
+      width:100%;
+      height:42px;
       border:0;
-      border-radius:16px;
-      background:rgba(255,255,255,0.10);
+      border-radius:14px;
+      background:rgba(255,255,255,0.12);
       color:#fff;
       cursor:pointer;
       display:flex;
       align-items:center;
       justify-content:center;
-      opacity:.95;
     }
 
-    .navBtn.active {
-      background:rgba(255,255,255,0.16);
+    .navBtn:active {
+      background:rgba(255,255,255,0.18);
     }
 
     .navIcon {
@@ -96,9 +113,6 @@
       height:22px;
       display:block;
     }
-
-    .view { display:none; }
-    .view.active { display:block; }
 
     .kv {
       display:grid;
@@ -115,7 +129,7 @@
 
 <body>
   <main class="content">
-    <section class="view active" id="view-search">
+    <section id="view-search">
       <div class="card">
         <div class="row" style="justify-content: space-between;">
           <h2>WaxAlert</h2>
@@ -141,21 +155,22 @@
     </section>
   </main>
 
-  <!-- v13: single Home button -->
+  <!-- Bottom Nav -->
   <nav class="bottomNav" aria-label="Primary">
-    <button class="navBtn active" id="btnHome" aria-label="Home">
-      <!-- Simple “home” icon (inline SVG) -->
-      <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M5 9.8V21h14V9.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10 21v-7h4v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+    <div class="bottomNavInner">
+      <button class="navBtn" id="btnHome" aria-label="Home">
+        <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9.8V21h14V9.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 21v-7h4v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
   </nav>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v13";
+    const APP_VERSION = "v14";
     document.getElementById("buildTag").textContent = APP_VERSION;
 
     if ("serviceWorker" in navigator) {
@@ -164,11 +179,8 @@
       );
     }
 
-    // v13: Home button just scrolls to top and ensures Search view is active
-    const homeBtn = document.getElementById("btnHome");
-    homeBtn.addEventListener("click", () => {
+    document.getElementById("btnHome").addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
-      // (Search is the only view right now, so no view switching needed.)
     });
 
     function normalize(s){ return String(s||"").toLowerCase(); }
@@ -191,7 +203,6 @@
       selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
     }
 
-    // Suggestions show ONLY display name (no keywords shown)
     function renderSuggestions(list){
       if (!list.length) { suggestionsEl.innerHTML = ""; return; }
       suggestionsEl.innerHTML = list.slice(0,12).map(p => `
@@ -216,63 +227,40 @@
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
         body:JSON.stringify({ action, payload })
       });
-      const text = await r.text();
-      try { return JSON.parse(text); }
-      catch (e) {
-        return { ok:false, error:"Non-JSON response from API", status:r.status, preview:text.slice(0, 300) };
-      }
+      return JSON.parse(await r.text());
     }
 
     function exportCardHTML(exportData){
       const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => Array.isArray(r))
-        .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
-        .filter(([k,v]) => k || v);
-
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k)}</div>
-          <div class="v">${escapeHTML(v)}</div>
-        </div>
-      `).join("");
-
       return `
         <div class="card">
-          ${kvs || `<div class="muted">No data returned yet.</div>`}
+          ${rows.map(r => `
+            <div class="kv">
+              <div class="k">${escapeHTML(r[0])}</div>
+              <div class="v">${escapeHTML(r[1])}</div>
+            </div>
+          `).join("")}
         </div>
       `;
     }
 
     async function loadCatalog(){
       const data = await api("products",{});
-      PRODUCT_CATALOG = (data && data.ok && Array.isArray(data.products)) ? data.products : [];
+      PRODUCT_CATALOG = data?.products || [];
     }
 
     async function runSearch(q,p){
-      q = String(q||"").trim();
-      if (!q && !(p && p.ebayUrl)) return;
+      if (!q && !p) return;
+      resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
 
-      const payload = { q: q || (p ? p.displayName : "") };
-      if (p && p.ebayUrl){
+      const payload = { q: q || p.displayName };
+      if (p?.ebayUrl) {
         payload.ebayUrl = p.ebayUrl;
         payload.productCode = p.code;
         payload.productName = p.displayName;
       }
 
-      resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
       const data = await api("search", payload);
-
-      if (!data || !data.ok){
-        resultsEl.innerHTML = `
-          <div class="card">
-            <b>Error</b>
-            <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-          </div>
-        `;
-        return;
-      }
-
       resultsEl.innerHTML = exportCardHTML(data.exportData);
     }
 
@@ -284,13 +272,10 @@
     suggestionsEl.addEventListener("click", e => {
       const el = e.target.closest("[data-code]");
       if (!el) return;
-      const p = PRODUCT_CATALOG.find(x => String(x.code) === String(el.dataset.code));
-      if (!p) return;
-
+      const p = PRODUCT_CATALOG.find(x => x.code === el.dataset.code);
       setSelectedProduct(p);
       qInput.value = p.displayName;
       suggestionsEl.innerHTML = "";
-
       if (p.ebayUrl) runSearch(p.displayName, p);
     });
 
