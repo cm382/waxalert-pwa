@@ -21,8 +21,8 @@
     :root{
       --navH: 62px;
       --radius: 14px;
-      --accentBlue: #005FA3; /* light-mode primary */
-      --contentMax: 900px;   /* <-- MAKE SEARCH + RESULTS + HOME MATCH */
+      --accentBlue: #005FA3;
+      --contentMax: 900px;
     }
 
     /* THEME TOKENS */
@@ -46,7 +46,6 @@
       --navBg:#0b0b0b;
       --navBorder:rgba(255,255,255,0.12);
 
-      /* Dark mode home button (neutral) */
       --navBtnBg:rgba(255,255,255,0.12);
       --navBtnIcon:#ffffff;
 
@@ -73,7 +72,6 @@
       --navBg:#ffffff;
       --navBorder:rgba(0,0,0,0.10);
 
-      /* Light mode home button (blue) */
       --navBtnBg:var(--accentBlue);
       --navBtnIcon:#ffffff;
 
@@ -96,16 +94,9 @@
       box-sizing: border-box;
     }
 
-    /* FULL-WIDTH SECTION WRAPPER (matches results + search + footer) */
-    .wrap{
-      max-width: var(--contentMax);
-      margin: 0 auto;
-    }
-
-    /* HEADER ABOVE CARD */
     .headerRow{
       position: relative;
-      max-width: var(--contentMax); /* <-- match everything */
+      max-width: var(--contentMax);
       margin: 6px auto 12px;
       text-align: center;
     }
@@ -125,7 +116,6 @@
       opacity: 0.6;
     }
 
-    /* icon-only theme toggle */
     .themeToggle{
       position:absolute;
       right:0;
@@ -141,6 +131,7 @@
       align-items:center;
       justify-content:center;
       transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+      z-index: 2;
     }
     .themeIcon{ width:22px; height:22px; display:block; }
 
@@ -152,7 +143,6 @@
       transition: background 160ms ease, border-color 160ms ease;
     }
 
-    /* SEARCH CARD WIDTH FIX: now matches results width */
     .searchCard{
       max-width: var(--contentMax);
       margin: 0 auto 14px;
@@ -218,12 +208,10 @@
       transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
     }
 
-    /* Suggestions */
     .list{ margin-top: 12px; display:grid; gap: 10px; }
     .suggestion{ cursor:pointer; }
     .suggestion .title{ font-weight: 700; }
 
-    /* Results */
     .resultsWrap{
       max-width: var(--contentMax);
       margin: 0 auto;
@@ -240,7 +228,6 @@
     .k{ opacity:0.85; }
     .v{ font-weight:700; text-align:right; }
 
-    /* Bottom nav (ONE home button) */
     .bottomNav{
       position: fixed;
       left:0; right:0; bottom:0;
@@ -253,7 +240,6 @@
       transition: background 160ms ease, border-color 160ms ease;
     }
 
-    /* HOME BUTTON WIDTH: match same 900px container */
     .bottomNavInner{
       width:100%;
       max-width: var(--contentMax);
@@ -280,10 +266,98 @@
       height: 22px;
       display:block;
     }
+
+    /* ---------------- SPLASH OVERLAY ---------------- */
+    .splash{
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      z-index: 10000;
+      transition: opacity 280ms ease;
+    }
+    .splash.hide{
+      opacity: 0;
+      pointer-events: none;
+    }
+    .splashInner{
+      text-align: center;
+      transform: translateY(6px);
+      animation: splashIn 420ms ease forwards;
+      width: min(520px, 92vw);
+      padding: 18px;
+      box-sizing: border-box;
+    }
+    @keyframes splashIn{
+      from{ opacity: 0; transform: translateY(14px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+
+    .splashTitle{
+      font-family: "Bangers", cursive;
+      font-size: 46px;
+      line-height: 1;
+      letter-spacing: 1px;
+      margin: 0;
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+    }
+    /* subtle shimmer */
+    .splashTitle::after{
+      content:"";
+      position:absolute;
+      top:-40%;
+      left:-30%;
+      width: 40%;
+      height: 180%;
+      transform: rotate(18deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+      animation: shimmer 1.1s ease-in-out infinite;
+    }
+    @keyframes shimmer{
+      0%{ left:-40%; opacity:0.0; }
+      35%{ opacity:0.9; }
+      100%{ left:120%; opacity:0.0; }
+    }
+
+    .splashSub{
+      margin-top: 10px;
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    .spinner{
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: rgba(255,255,255,0.85);
+      margin: 14px auto 0;
+      animation: spin 800ms linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    /* Light-mode spinner colors */
+    body.light .spinner{
+      border-color: rgba(0,0,0,0.18);
+      border-top-color: rgba(0,0,0,0.70);
+    }
   </style>
 </head>
 
 <body>
+  <!-- SPLASH OVERLAY -->
+  <div class="splash" id="splash">
+    <div class="splashInner">
+      <h1 class="splashTitle"><span style="font-size:58px;">W</span>ax<span style="font-size:58px;">A</span>lert</h1>
+      <div class="splashSub">Loading…</div>
+      <div class="spinner" aria-hidden="true"></div>
+    </div>
+  </div>
+
   <main class="content">
     <section id="view-search">
       <div class="headerRow">
@@ -343,7 +417,7 @@
   <script>
     // ---------------- CONFIG ----------------
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v21.3";
+    const APP_VERSION = "v21.4";
 
     document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
@@ -396,6 +470,29 @@
       const next = document.body.classList.contains("light") ? "dark" : "light";
       applyTheme(next);
     });
+
+    // ---------------- SPLASH CONTROL ----------------
+    const splashEl = document.getElementById("splash");
+    const startedAt = Date.now();
+    let splashDone = false;
+
+    function hideSplash() {
+      if (splashDone) return;
+      splashDone = true;
+
+      // Ensure the splash is visible for at least 650ms (prevents flicker)
+      const minMs = 650;
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, minMs - elapsed);
+
+      setTimeout(() => {
+        splashEl.classList.add("hide");
+        setTimeout(() => splashEl.remove(), 320);
+      }, wait);
+    }
+
+    // Hard safety: never block user longer than 2.5s
+    setTimeout(hideSplash, 2500);
 
     // ---------------- HELPERS ----------------
     function escapeHTML(s){
@@ -554,7 +651,11 @@
     });
 
     // init
-    loadCatalog();
+    (async () => {
+      await loadCatalog();
+      // once we’ve attempted catalog load, dismiss splash
+      hideSplash();
+    })();
   </script>
 </body>
 </html>
