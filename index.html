@@ -33,6 +33,27 @@
       margin: 0 auto;
     }
 
+    /* v20: Title ABOVE card */
+    .headerBlock {
+      text-align: center;
+      margin: 6px 0 12px;
+    }
+
+    .appTitle {
+      font-family: "Bangers", cursive;
+      font-size: 34px;
+      letter-spacing: 1px;
+      line-height: 1;
+      margin: 0;
+    }
+    .appTitle .big { font-size: 42px; }
+
+    .versionTag {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
     .card {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.12);
@@ -40,17 +61,7 @@
       padding: 16px;
     }
 
-    /* Title */
-    .appTitle {
-      font-family: "Bangers", cursive;
-      font-size: 28px;
-      text-align: center;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-    }
-    .appTitle .big { font-size: 34px; }
-
-    /* Hero text (left aligned now) */
+    /* Hero text (left aligned) */
     .heroText {
       font-size: 16px;
       line-height: 1.4;
@@ -98,6 +109,20 @@
       cursor: pointer;
     }
 
+    /* v20: Clear button */
+    button.ghost {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: transparent;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.ghost:active { background: rgba(255,255,255,0.08); }
+
     .list { margin-top: 12px; display: grid; gap: 10px; }
 
     .suggestion { cursor: pointer; }
@@ -130,16 +155,8 @@
     .bottomNavInner {
       width: 100%;
       max-width: 900px;
-      padding: 8px 16px max(10px, env(safe-area-inset-bottom));
+      padding: 10px 16px max(10px, env(safe-area-inset-bottom));
       box-sizing: border-box;
-      display: grid;
-      gap: 6px;
-    }
-
-    .versionTag {
-      text-align: center;
-      font-size: 11px;
-      opacity: 0.6;
     }
 
     .navBtn {
@@ -156,7 +173,6 @@
     }
 
     .navBtn:active { background: rgba(255,255,255,0.18); }
-
     .navIcon { width: 22px; height: 22px; display: block; }
   </style>
 </head>
@@ -164,12 +180,16 @@
 <body>
   <main class="content">
     <section id="view-search">
-      <div class="card">
 
+      <!-- v20: Title + version ABOVE the card -->
+      <div class="headerBlock">
         <div class="appTitle">
           <span class="big">W</span>ax<span class="big">A</span>lert
         </div>
+        <div class="versionTag" id="versionTag"></div>
+      </div>
 
+      <div class="card">
         <div class="heroText">
           Real-time box prices. Zero guesswork.
         </div>
@@ -188,6 +208,9 @@
 
         <button class="primary" id="btnSearch">Search</button>
 
+        <!-- v20: Clear button -->
+        <button class="ghost" id="btnClear" type="button">Clear</button>
+
         <div class="spacer"></div>
         <div class="small" id="selectedProduct"></div>
       </div>
@@ -198,7 +221,6 @@
 
   <nav class="bottomNav" aria-label="Primary">
     <div class="bottomNavInner">
-      <div class="versionTag" id="versionTag"></div>
       <button class="navBtn" id="btnHome" aria-label="Home">
         <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M3 10.5L12 3l9 7.5"
@@ -217,16 +239,19 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v19";
+    const APP_VERSION = "v20";
 
+    // Show version under title (v20)
     document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
+    // Service worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () =>
         navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
       );
     }
 
+    // Home button
     document.getElementById("btnHome").addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -243,6 +268,7 @@
     const resultsEl = document.getElementById("results");
     const selectedEl = document.getElementById("selectedProduct");
     const btnSearch = document.getElementById("btnSearch");
+    const btnClear = document.getElementById("btnClear");
 
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
@@ -365,6 +391,15 @@
         e.preventDefault();
         runSearch(qInput.value, SELECTED_PRODUCT);
       }
+    });
+
+    // v20: Clear button behavior
+    btnClear.addEventListener("click", () => {
+      qInput.value = "";
+      suggestionsEl.innerHTML = "";
+      resultsEl.innerHTML = "";
+      setSelectedProduct(null);
+      qInput.focus();
     });
 
     loadCatalog();
