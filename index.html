@@ -267,7 +267,11 @@
       display:block;
     }
 
-    /* ---------------- SPLASH OVERLAY ---------------- */
+    /* ---------------- SPLASH OVERLAY (FIXED) ----------------
+      - No spinner
+      - No clipping: remove overflow hidden and add top padding
+      - Slightly reduced font sizes to keep ascenders (like T) safe
+    */
     .splash{
       position: fixed;
       inset: 0;
@@ -276,7 +280,7 @@
       display: grid;
       place-items: center;
       z-index: 10000;
-      transition: opacity 280ms ease;
+      transition: opacity 260ms ease;
     }
     .splash.hide{
       opacity: 0;
@@ -284,11 +288,10 @@
     }
     .splashInner{
       text-align: center;
-      transform: translateY(6px);
-      animation: splashIn 420ms ease forwards;
       width: min(520px, 92vw);
-      padding: 18px;
+      padding: 34px 18px 18px; /* extra top padding prevents any font top-crop */
       box-sizing: border-box;
+      animation: splashIn 420ms ease forwards;
     }
     @keyframes splashIn{
       from{ opacity: 0; transform: translateY(14px); }
@@ -297,14 +300,16 @@
 
     .splashTitle{
       font-family: "Bangers", cursive;
-      font-size: 46px;
-      line-height: 1;
+      font-size: 44px;
+      line-height: 1.05;
       letter-spacing: 1px;
       margin: 0;
       position: relative;
       display: inline-block;
-      overflow: hidden;
+      /* IMPORTANT: no overflow hidden so letters can't be clipped */
     }
+    .splashTitle .big{ font-size: 56px; }
+
     /* subtle shimmer */
     .splashTitle::after{
       content:"";
@@ -316,34 +321,12 @@
       transform: rotate(18deg);
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
       animation: shimmer 1.1s ease-in-out infinite;
+      pointer-events: none;
     }
     @keyframes shimmer{
       0%{ left:-40%; opacity:0.0; }
       35%{ opacity:0.9; }
       100%{ left:120%; opacity:0.0; }
-    }
-
-    .splashSub{
-      margin-top: 10px;
-      font-size: 13px;
-      opacity: 0.75;
-    }
-
-    .spinner{
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      border: 2px solid rgba(255,255,255,0.25);
-      border-top-color: rgba(255,255,255,0.85);
-      margin: 14px auto 0;
-      animation: spin 800ms linear infinite;
-    }
-    @keyframes spin{ to{ transform: rotate(360deg); } }
-
-    /* Light-mode spinner colors */
-    body.light .spinner{
-      border-color: rgba(0,0,0,0.18);
-      border-top-color: rgba(0,0,0,0.70);
     }
   </style>
 </head>
@@ -352,9 +335,9 @@
   <!-- SPLASH OVERLAY -->
   <div class="splash" id="splash">
     <div class="splashInner">
-      <h1 class="splashTitle"><span style="font-size:58px;">W</span>ax<span style="font-size:58px;">A</span>lert</h1>
-      <div class="splashSub">Loading…</div>
-      <div class="spinner" aria-hidden="true"></div>
+      <h1 class="splashTitle">
+        <span class="big">W</span>ax<span class="big">A</span>lert
+      </h1>
     </div>
   </div>
 
@@ -417,7 +400,7 @@
   <script>
     // ---------------- CONFIG ----------------
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v21.4";
+    const APP_VERSION = "v21.5";
 
     document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
@@ -480,7 +463,6 @@
       if (splashDone) return;
       splashDone = true;
 
-      // Ensure the splash is visible for at least 650ms (prevents flicker)
       const minMs = 650;
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, minMs - elapsed);
@@ -491,7 +473,6 @@
       }, wait);
     }
 
-    // Hard safety: never block user longer than 2.5s
     setTimeout(hideSplash, 2500);
 
     // ---------------- HELPERS ----------------
@@ -653,7 +634,6 @@
     // init
     (async () => {
       await loadCatalog();
-      // once we’ve attempted catalog load, dismiss splash
       hideSplash();
     })();
   </script>
