@@ -1,6 +1,6 @@
-// WaxAlert Service Worker (V11)
+// WaxAlert Service Worker (V12)
 
-const CACHE = "waxalert-v11";
+const CACHE = "waxalert-v12";
 
 const APP_SHELL = [
   "/",
