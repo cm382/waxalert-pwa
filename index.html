@@ -200,19 +200,18 @@
 
   <script>
     // ---------------- CONFIG ----------------
-    const API_URL = "https://script.google.com/macros/s/AKfycbyGXWnJRNzsCevRh3UdF_P4gi78Udpgel8EDSzVSe0HbVCyU3o_11tJiww-dtKAwu3z/exec;
+    const API_URL = "https://script.google.com/macros/s/AKfycbyHeOMZV8sf2XwvAKxJwVFDOxeXBiJJ2HkILf3BlkaAx7ytONz7NTwkwozQucvxEEsCig/exec";
 
     // bump this any time you deploy so you can confirm you're seeing the latest build
-   const APP_VERSION = "2026-01-04-01";
+    const APP_VERSION = "2026-01-04-01";
     document.getElementById("buildTag").textContent = "v" + APP_VERSION;
 
     // ---------------- PWA SERVICE WORKER ----------------
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () =>
-    navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
-  );
-}
-
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+      );
+    }
 
     // ---------------- NAV ----------------
     const buttons = [...document.querySelectorAll(".navBtn")];
@@ -244,13 +243,25 @@ if ("serviceWorker" in navigator) {
     }
     setLastQuery(getLastQuery());
 
+    // Safer API helper: handles non-JSON responses (e.g., Apps Script permission HTML)
     async function api(action, payload) {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action, payload })
       });
-      return await res.json();
+
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        return {
+          ok: false,
+          error: "Non-JSON response from Apps Script (check deployment access/permissions).",
+          status: res.status,
+          preview: text.slice(0, 300)
+        };
+      }
     }
 
     // Render Export A1:B20 (2 columns) into a clean key/value card
@@ -365,6 +376,7 @@ if ("serviceWorker" in navigator) {
           <div class="card">
             <b>Error</b>
             <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
+            ${data && data.preview ? `<div class="small" style="margin-top:8px;opacity:0.75;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
           </div>
         `;
         return;
