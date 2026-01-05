@@ -15,120 +15,37 @@
   <style>
     :root { --navH: 62px; --radius: 14px; }
     html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0b0b;
-      color: #fff;
-    }
-    .content {
-      padding: 16px 16px calc(var(--navH) + 18px);
-      max-width: 900px;
-      margin: 0 auto;
-    }
+    body { margin:0; font-family:Arial,sans-serif; background:#0b0b0b; color:#fff; }
+    .content { padding:16px 16px calc(var(--navH) + 18px); max-width:900px; margin:0 auto; }
     .row { display:flex; gap:10px; align-items:center; }
-    .card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
-      padding: 14px;
-    }
-    h2 { margin: 0 0 10px; font-size: 20px; }
-    .muted { opacity: 0.8; font-size: 13px; line-height: 1.35; }
-    .small { opacity: 0.7; font-size: 12px; }
-    .spacer { height: 12px; }
-
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background:#111;
-      color:#fff;
-      font-size:16px;
-      outline: none;
-    }
-    button.primary {
-      width:100%;
-      margin-top:10px;
-      padding: 12px;
-      border:0;
-      border-radius: 12px;
-      background:#fff;
-      color:#000;
-      font-weight:700;
-      cursor:pointer;
-    }
-    button.ghost {
-      width:100%;
-      margin-top:10px;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.20);
-      background: transparent;
-      color:#fff;
-      cursor:pointer;
-    }
-
-    .list { margin-top: 12px; display: grid; gap: 10px; }
-
-    .suggestion { cursor: pointer; }
-    .suggestion .title { font-weight: 700; }
-    .suggestion .meta { opacity: 0.8; font-size: 12px; margin-top: 4px; }
-
-    .bottomNav {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: var(--navH);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      padding: 10px 10px max(10px, env(safe-area-inset-bottom));
-      background: #0b0b0b;
-      border-top: 1px solid rgba(255,255,255,0.12);
-      z-index: 9999;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    @media (min-width: 900px) {
-      .bottomNav { left: 50%; transform: translateX(-50%); }
-    }
-    .navBtn {
-      border: 0;
-      border-radius: var(--radius);
-      background: transparent;
-      color: #fff;
-      font-size: 13px;
-      padding: 10px 6px;
-      cursor: pointer;
-      opacity: 0.75;
-    }
-    .navBtn.active {
-      background: rgba(255,255,255,0.12);
-      opacity: 1;
-    }
-
+    .card { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px; }
+    h2 { margin:0 0 10px; font-size:20px; }
+    .muted { opacity:.8; font-size:13px; line-height:1.35; }
+    .small { opacity:.7; font-size:12px; }
+    .spacer { height:12px; }
+    input { width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:#111; color:#fff; font-size:16px; outline:none; }
+    button.primary { width:100%; margin-top:10px; padding:12px; border:0; border-radius:12px; background:#fff; color:#000; font-weight:700; cursor:pointer; }
+    button.ghost { width:100%; margin-top:10px; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.20); background:transparent; color:#fff; cursor:pointer; }
+    .list { margin-top:12px; display:grid; gap:10px; }
+    .suggestion { cursor:pointer; }
+    .suggestion .title { font-weight:700; }
+    .suggestion .meta { opacity:.8; font-size:12px; margin-top:4px; }
+    .bottomNav { position:fixed; left:0; right:0; bottom:0; height:var(--navH); display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:10px 10px max(10px, env(safe-area-inset-bottom)); background:#0b0b0b; border-top:1px solid rgba(255,255,255,0.12); z-index:9999; max-width:900px; margin:0 auto; }
+    @media (min-width:900px){ .bottomNav{ left:50%; transform:translateX(-50%);} }
+    .navBtn { border:0; border-radius:var(--radius); background:transparent; color:#fff; font-size:13px; padding:10px 6px; cursor:pointer; opacity:.75; }
+    .navBtn.active { background:rgba(255,255,255,0.12); opacity:1; }
     .view { display:none; }
     .view.active { display:block; }
-
-    .kv {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-    }
-    .kv:last-child { border-bottom: 0; }
-    .k { opacity: 0.85; }
-    .v { font-weight: 700; text-align: right; }
-    a { color: #fff; }
+    .kv { display:grid; grid-template-columns:1fr auto; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.10); }
+    .kv:last-child { border-bottom:0; }
+    .k { opacity:.85; }
+    .v { font-weight:700; text-align:right; }
+    a { color:#fff; }
   </style>
 </head>
 
 <body>
   <main class="content">
-    <!-- SEARCH -->
     <section class="view active" id="view-search">
       <div class="card">
         <div class="row" style="justify-content: space-between;">
@@ -144,13 +61,10 @@
         <div class="small" id="catalogStatus"></div>
 
         <input id="q" placeholder="Type: dune chrome hobby, topps chrome hobby, etc." />
-
-        <!-- typeahead results -->
         <div class="list" id="suggestions"></div>
 
         <button class="primary" id="btnSearch">Search</button>
         <button class="ghost" id="btnLast">Use last query</button>
-        <button class="ghost" id="btnReloadCatalog">Reload catalog</button>
 
         <div class="spacer"></div>
         <div class="small" id="lastQuery"></div>
@@ -160,33 +74,24 @@
       <div class="list" id="results"></div>
     </section>
 
-    <!-- PRICES -->
     <section class="view" id="view-prices">
       <div class="card">
         <h2>Prices</h2>
-        <div class="muted">
-          Next: map Export rows into a cleaner “Avg / Count / Low / High” layout.
-        </div>
+        <div class="muted">Next: map Export rows into a cleaner “Avg / Count / Low / High” layout.</div>
       </div>
     </section>
 
-    <!-- ALERTS -->
     <section class="view" id="view-alerts">
       <div class="card">
         <h2>Alerts</h2>
-        <div class="muted">
-          Later: track + notify when under $X (Sheets + Apps Script trigger).
-        </div>
+        <div class="muted">Later: track + notify when under $X (Sheets + Apps Script trigger).</div>
       </div>
     </section>
 
-    <!-- SAVED / DEBUG -->
     <section class="view" id="view-saved">
       <div class="card">
         <h2>Export Debug</h2>
-        <div class="muted">
-          Pulls current Export!A1:B20 without running a new search.
-        </div>
+        <div class="muted">Pulls current Export!A1:B20 without running a new search.</div>
         <button class="primary" id="btnExport">Refresh Export</button>
       </div>
       <div class="list" id="exportView"></div>
@@ -203,13 +108,13 @@
   <script>
     // ---------------- CONFIG ----------------
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v6";
-    document.getElementById("buildTag").textContent = "v" + APP_VERSION;
+    const APP_VERSION = "v7";
+    document.getElementById("buildTag").textContent = APP_VERSION;
 
     // ---------------- PWA SERVICE WORKER ----------------
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () =>
-        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+        navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(APP_VERSION)}`)
       );
     }
 
@@ -238,19 +143,15 @@
       localStorage.setItem("waxalert_last_query", q);
       document.getElementById("lastQuery").textContent = q ? ("Last query: " + q) : "";
     }
-    function getLastQuery() {
-      return localStorage.getItem("waxalert_last_query") || "";
-    }
+    function getLastQuery() { return localStorage.getItem("waxalert_last_query") || ""; }
     setLastQuery(getLastQuery());
 
-    // ---------------- API ----------------
     async function api(action, payload) {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action, payload })
       });
-
       const text = await res.text();
       try { return JSON.parse(text); }
       catch (e) {
@@ -258,7 +159,6 @@
       }
     }
 
-    // ---------------- RENDER EXPORT ----------------
     function exportCardHTML(exportData, ebaySoldUrl) {
       const rows = Array.isArray(exportData) ? exportData : [];
       const cleaned = rows
@@ -277,15 +177,9 @@
         <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
       ` : "";
 
-      return `
-        <div class="card">
-          ${kvs || `<div class="muted">No export data returned yet. Check Export!A1:B20 and formula refresh.</div>`}
-          ${link}
-        </div>
-      `;
+      return `<div class="card">${kvs || `<div class="muted">No export data returned yet.</div>`}${link}</div>`;
     }
 
-    // ---------------- TYPEAHEAD CATALOG ----------------
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
 
@@ -294,67 +188,50 @@
 
     function setSelectedProduct(p) {
       SELECTED_PRODUCT = p || null;
-      if (!SELECTED_PRODUCT) {
-        selectedEl.textContent = "";
-        return;
-      }
-      selectedEl.textContent = "Selected: " + SELECTED_PRODUCT.displayName + " (" + SELECTED_PRODUCT.code + ")";
+      selectedEl.textContent = SELECTED_PRODUCT
+        ? ("Selected: " + SELECTED_PRODUCT.displayName + " (" + SELECTED_PRODUCT.code + ")")
+        : "";
     }
 
     function renderSuggestions(list) {
-      if (!list.length) {
-        suggestionsEl.innerHTML = "";
-        return;
-      }
-      suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
-        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
-          <div class="title">${escapeHTML(p.displayName)}</div>
-          <div class="meta">${escapeHTML(p.keywords || p.code)}</div>
-        </div>
-      `).join("");
+      suggestionsEl.innerHTML = list.length
+        ? list.slice(0, 12).map(p => `
+            <div class="card suggestion" data-code="${escapeHTML(p.code)}">
+              <div class="title">${escapeHTML(p.displayName)}</div>
+              <div class="meta">${escapeHTML(p.keywords || p.code)}</div>
+            </div>
+          `).join("")
+        : "";
     }
 
     function filterCatalog(q) {
       const t = normalize(q).trim();
       if (!t) return [];
       const tokens = t.split(/\s+/).filter(Boolean);
-
       return PRODUCT_CATALOG.filter(p => {
         const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
         return tokens.every(tok => hay.includes(tok));
       });
     }
 
-    async function loadCatalog(forceRefresh) {
-      if (!forceRefresh) {
-        const cached = localStorage.getItem("waxalert_products_v1");
-        if (cached) {
-          try {
-            PRODUCT_CATALOG = JSON.parse(cached) || [];
-            setCatalogStatus(`Catalog: ${PRODUCT_CATALOG.length} (cached)`);
-          } catch(e) {}
-        }
-      }
-
+    async function loadCatalog() {
       setCatalogStatus("Catalog: loading…");
 
       const data = await api("products", {});
       if (!data || !data.ok || !Array.isArray(data.products)) {
         setCatalogStatus(`Catalog error: ${escapeHTML((data && data.error) ? data.error : "unknown")}`);
         console.log("products() response:", data);
+        PRODUCT_CATALOG = [];
         return;
       }
 
       PRODUCT_CATALOG = data.products;
-      localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
       setCatalogStatus(`Catalog: ${PRODUCT_CATALOG.length} (live)`);
 
-      // If user already typed something, refresh suggestions immediately
       const current = qInput.value.trim();
       if (current) renderSuggestions(filterCatalog(current));
     }
 
-    // ---------------- SEARCH FLOW ----------------
     const qInput = document.getElementById("q");
     const resultsEl = document.getElementById("results");
 
@@ -363,12 +240,10 @@
       if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
 
       setLastQuery(q || (selectedProduct ? selectedProduct.displayName : ""));
-
       resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
 
       const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
 
-      // Only send ebayUrl if it exists
       if (selectedProduct && selectedProduct.ebayUrl) {
         payload.ebayUrl = selectedProduct.ebayUrl;
         payload.productCode = selectedProduct.code;
@@ -376,13 +251,11 @@
       }
 
       const data = await api("search", payload);
-
       if (!data || !data.ok) {
         resultsEl.innerHTML = `
           <div class="card">
             <b>Error</b>
             <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-            ${data && data.preview ? `<div class="small" style="margin-top:8px;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
           </div>
         `;
         return;
@@ -391,18 +264,14 @@
       resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
     }
 
-    // Typing shows suggestions and clears selection
     qInput.addEventListener("input", () => {
       setSelectedProduct(null);
-      const q = qInput.value.trim();
-      renderSuggestions(filterCatalog(q));
+      renderSuggestions(filterCatalog(qInput.value.trim()));
     });
 
-    // Tap a suggestion => select and immediately search using product ebayUrl
     suggestionsEl.addEventListener("click", (e) => {
       const card = e.target.closest("[data-code]");
       if (!card) return;
-
       const code = card.getAttribute("data-code");
       const product = PRODUCT_CATALOG.find(p => p.code === code);
       if (!product) return;
@@ -411,47 +280,30 @@
       qInput.value = product.displayName;
       suggestionsEl.innerHTML = "";
 
-      // If product has an ebayUrl, use it; otherwise don't auto-search
-      if (product.ebayUrl) {
-        runSearch(product.displayName, product);
-      }
+      if (product.ebayUrl) runSearch(product.displayName, product);
     });
 
-    document.getElementById("btnSearch").addEventListener("click", () => {
-      runSearch(qInput.value.trim(), SELECTED_PRODUCT);
-    });
-
+    document.getElementById("btnSearch").addEventListener("click", () => runSearch(qInput.value.trim(), SELECTED_PRODUCT));
     document.getElementById("btnLast").addEventListener("click", () => {
       const q = getLastQuery();
-      if (q) {
-        qInput.value = q;
-        runSearch(q, null);
-      }
-    });
-
-    document.getElementById("btnReloadCatalog").addEventListener("click", () => {
-      localStorage.removeItem("waxalert_products_v1");
-      loadCatalog(true);
+      if (q) { qInput.value = q; runSearch(q, null); }
     });
 
     qInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") runSearch(qInput.value.trim(), SELECTED_PRODUCT);
     });
 
-    // ---------------- EXPORT DEBUG VIEW ----------------
     const exportEl = document.getElementById("exportView");
     document.getElementById("btnExport").addEventListener("click", async () => {
       exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
       const data = await api("export", {});
-      if (!data || !data.ok) {
-        exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div></div>`;
-        return;
-      }
-      exportEl.innerHTML = exportCardHTML(data.exportData, "");
+      exportEl.innerHTML = (data && data.ok)
+        ? exportCardHTML(data.exportData, "")
+        : `<div class="card"><b>Error</b><div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div></div>`;
     });
 
-    // init
-    loadCatalog(false);
+    loadCatalog();
   </script>
 </body>
 </html>
+
