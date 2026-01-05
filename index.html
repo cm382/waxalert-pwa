@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WaxAlert</title>
 
+  <!-- Bangers font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+
   <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -15,26 +20,50 @@
   <style>
     :root { --navH: 62px; --radius: 14px; }
     html, body { height: 100%; }
-    body { margin:0; font-family:Arial,sans-serif; background:#0b0b0b; color:#fff; }
-    .content { padding:16px 16px calc(var(--navH) + 18px); max-width:900px; margin:0 auto; }
-    .row { display:flex; gap:10px; align-items:center; }
-    .card { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px; }
-    h2 { margin:0 0 10px; font-size:20px; }
+    body {
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#0b0b0b;
+      color:#fff;
+    }
 
-    /* v17: hero copy matches input size */
+    .content {
+      padding:16px 16px calc(var(--navH) + 18px);
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    .card {
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    /* v18 Title */
+    .appTitle {
+      font-family: "Bangers", cursive;
+      font-size: 28px;
+      text-align: center;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .appTitle .big {
+      font-size: 34px;
+    }
+
     .heroText {
       font-size:16px;
       line-height:1.4;
       opacity:0.9;
+      text-align: center;
+      margin-bottom: 12px;
     }
 
     .small { opacity:.7; font-size:12px; }
     .spacer { height:12px; }
 
-    .searchWrap {
-      position: relative;
-      width: 100%;
-    }
+    .searchWrap { position: relative; width: 100%; }
     .searchIcon {
       position: absolute;
       left: 12px;
@@ -84,12 +113,14 @@
       display:flex;
       justify-content:center;
     }
+
     .bottomNavInner {
       width:100%;
       max-width:900px;
       padding:10px 16px max(10px, env(safe-area-inset-bottom));
       box-sizing:border-box;
     }
+
     .navBtn {
       width:100%;
       height:42px;
@@ -102,8 +133,8 @@
       align-items:center;
       justify-content:center;
     }
-    .navBtn:active { background:rgba(255,255,255,0.18); }
-    .navIcon { width:22px; height:22px; display:block; }
+
+    .navIcon { width:22px; height:22px; }
 
     .kv {
       display:grid;
@@ -120,33 +151,31 @@
 
 <body>
   <main class="content">
-    <section id="view-search">
+    <section>
       <div class="card">
-        <div class="row" style="justify-content: space-between;">
-          <h2>WaxAlert</h2>
-          <div class="small" id="buildTag"></div>
+
+        <!-- v18 centered branded title -->
+        <div class="appTitle">
+          <span class="big">W</span>ax
+          <span class="big">A</span>lert
         </div>
 
-        <!-- v17 updated copy -->
         <div class="heroText">
           Real-time box prices. Zero guesswork.
         </div>
 
-        <div class="spacer"></div>
-
         <div class="searchWrap">
           <svg class="searchIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M16.8 16.8 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16.8 16.8 21 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
           <input id="q" placeholder="What box are you searching for?" />
         </div>
 
         <div class="list" id="suggestions"></div>
-
         <button class="primary" id="btnSearch">Search</button>
-
-        <div class="spacer"></div>
         <div class="small" id="selectedProduct"></div>
       </div>
 
@@ -154,13 +183,19 @@
     </section>
   </main>
 
-  <nav class="bottomNav" aria-label="Primary">
+  <nav class="bottomNav">
     <div class="bottomNavInner">
       <button class="navBtn" id="btnHome" aria-label="Home">
-        <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 9.8V21h14V9.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10 21v-7h4v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg class="navIcon" viewBox="0 0 24 24" fill="none">
+          <path d="M3 10.5L12 3l9 7.5"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9.8V21h14V9.8"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 21v-7h4v7"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
@@ -168,18 +203,7 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v17";
-    document.getElementById("buildTag").textContent = APP_VERSION;
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () =>
-        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
-      );
-    }
-
-    document.getElementById("btnHome").addEventListener("click", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+    const APP_VERSION = "v18";
 
     function normalize(s){ return String(s||"").toLowerCase(); }
     function escapeHTML(s){
@@ -196,112 +220,34 @@
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
 
-    function setSelectedProduct(p){
-      SELECTED_PRODUCT = p || null;
-      selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
-    }
-
-    function renderSuggestions(list){
-      if (!list.length) { suggestionsEl.innerHTML = ""; return; }
-      suggestionsEl.innerHTML = list.slice(0,12).map(p => `
-        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
-          <div class="title">${escapeHTML(p.displayName)}</div>
-        </div>
-      `).join("");
-    }
-
-    function filterCatalog(q){
-      const tokens = normalize(q).split(/\s+/).filter(Boolean);
-      if (!tokens.length) return [];
-      return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize((p.displayName||"") + " " + (p.keywords||"") + " " + (p.code||""));
-        return tokens.every(t => hay.includes(t));
-      });
-    }
-
     async function api(action,payload){
       const r = await fetch(API_URL,{
         method:"POST",
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
         body:JSON.stringify({ action, payload })
       });
-      const text = await r.text();
-      try { return JSON.parse(text); }
-      catch (e) { return { ok:false, error:"Non-JSON response from API" }; }
-    }
-
-    function exportCardHTML(exportData){
-      const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => Array.isArray(r))
-        .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
-        .filter(([k,v]) => k || v);
-
-      if (!cleaned.length) {
-        return `<div class="card"><div class="heroText">No data returned yet.</div></div>`;
-      }
-
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k)}</div>
-          <div class="v">${escapeHTML(v)}</div>
-        </div>
-      `).join("");
-
-      return `<div class="card">${kvs}</div>`;
+      const t = await r.text();
+      try { return JSON.parse(t); } catch { return { ok:false }; }
     }
 
     async function loadCatalog(){
-      const data = await api("products",{});
-      PRODUCT_CATALOG = (data && data.ok && Array.isArray(data.products)) ? data.products : [];
+      const d = await api("products",{});
+      PRODUCT_CATALOG = d?.products || [];
     }
 
-    async function runSearch(q,p){
-      q = String(q||"").trim();
-      if (!q && !(p && p.ebayUrl)) return;
-
-      resultsEl.innerHTML = `<div class="card"><div class="heroText">Searching…</div></div>`;
-
-      const payload = { q: q || (p ? p.displayName : "") };
-      if (p && p.ebayUrl){
-        payload.ebayUrl = p.ebayUrl;
-        payload.productCode = p.code;
-        payload.productName = p.displayName;
-      }
-
-      const data = await api("search", payload);
-
-      if (!data || !data.ok){
-        resultsEl.innerHTML = `<div class="card"><div class="heroText">Error loading data</div></div>`;
-        return;
-      }
-
-      resultsEl.innerHTML = exportCardHTML(data.exportData);
+    function renderSuggestions(list){
+      suggestionsEl.innerHTML = list.slice(0,10).map(p => `
+        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
+          <div class="title">${escapeHTML(p.displayName)}</div>
+        </div>`).join("");
     }
 
-    qInput.addEventListener("input", () => {
-      setSelectedProduct(null);
-      renderSuggestions(filterCatalog(qInput.value));
-    });
-
-    suggestionsEl.addEventListener("click", e => {
-      const el = e.target.closest("[data-code]");
-      if (!el) return;
-      const p = PRODUCT_CATALOG.find(x => String(x.code) === String(el.dataset.code));
-      if (!p) return;
-
-      setSelectedProduct(p);
-      qInput.value = p.displayName;
-      suggestionsEl.innerHTML = "";
-      if (p.ebayUrl) runSearch(p.displayName, p);
-    });
-
-    document.getElementById("btnSearch").addEventListener("click", () => {
-      runSearch(qInput.value, SELECTED_PRODUCT);
-    });
-
-    qInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") runSearch(qInput.value, SELECTED_PRODUCT);
+    qInput.addEventListener("input",()=>{
+      const t = normalize(qInput.value);
+      if (!t) { suggestionsEl.innerHTML=""; return; }
+      renderSuggestions(PRODUCT_CATALOG.filter(p =>
+        normalize(p.displayName + " " + p.keywords).includes(t)
+      ));
     });
 
     loadCatalog();
