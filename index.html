@@ -20,18 +20,8 @@
   <style>
     :root { --navH: 62px; --radius: 14px; }
     html, body { height: 100%; }
-    body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:#0b0b0b;
-      color:#fff;
-    }
-
-    .content {
-      padding:16px 16px calc(var(--navH) + 18px);
-      max-width:900px;
-      margin:0 auto;
-    }
+    body { margin:0; font-family:Arial,sans-serif; background:#0b0b0b; color:#fff; }
+    .content { padding:16px 16px calc(var(--navH) + 18px); max-width:900px; margin:0 auto; }
 
     .card {
       background:rgba(255,255,255,0.08);
@@ -48,33 +38,30 @@
       letter-spacing: 1px;
       margin-bottom: 6px;
     }
-    .appTitle .big {
-      font-size: 34px;
-    }
+    .appTitle .big { font-size: 34px; }
 
     .heroText {
       font-size:16px;
       line-height:1.4;
       opacity:0.9;
-      text-align: center;
+      text-align:center;
       margin-bottom: 12px;
     }
 
     .small { opacity:.7; font-size:12px; }
     .spacer { height:12px; }
 
+    /* Search input w/ icon */
     .searchWrap { position: relative; width: 100%; }
     .searchIcon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 18px;
-      height: 18px;
-      opacity: 0.75;
-      pointer-events: none;
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px; height:18px;
+      opacity:0.75;
+      pointer-events:none;
     }
-
     input {
       width:100%;
       box-sizing:border-box;
@@ -104,8 +91,7 @@
     .suggestion .title { font-weight:700; }
 
     .bottomNav {
-      position:fixed;
-      left:0; right:0; bottom:0;
+      position:fixed; left:0; right:0; bottom:0;
       height:var(--navH);
       background:#0b0b0b;
       border-top:1px solid rgba(255,255,255,0.12);
@@ -113,14 +99,12 @@
       display:flex;
       justify-content:center;
     }
-
     .bottomNavInner {
       width:100%;
       max-width:900px;
       padding:10px 16px max(10px, env(safe-area-inset-bottom));
       box-sizing:border-box;
     }
-
     .navBtn {
       width:100%;
       height:42px;
@@ -133,8 +117,8 @@
       align-items:center;
       justify-content:center;
     }
-
-    .navIcon { width:22px; height:22px; }
+    .navBtn:active { background:rgba(255,255,255,0.18); }
+    .navIcon { width:22px; height:22px; display:block; }
 
     .kv {
       display:grid;
@@ -151,10 +135,9 @@
 
 <body>
   <main class="content">
-    <section>
+    <section id="view-search">
       <div class="card">
 
-        <!-- v18 centered branded title -->
         <div class="appTitle">
           <span class="big">W</span>ax
           <span class="big">A</span>lert
@@ -175,7 +158,10 @@
         </div>
 
         <div class="list" id="suggestions"></div>
+
         <button class="primary" id="btnSearch">Search</button>
+
+        <div class="spacer"></div>
         <div class="small" id="selectedProduct"></div>
       </div>
 
@@ -183,10 +169,10 @@
     </section>
   </main>
 
-  <nav class="bottomNav">
+  <nav class="bottomNav" aria-label="Primary">
     <div class="bottomNavInner">
       <button class="navBtn" id="btnHome" aria-label="Home">
-        <svg class="navIcon" viewBox="0 0 24 24" fill="none">
+        <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M3 10.5L12 3l9 7.5"
             stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"/>
@@ -203,7 +189,20 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v18";
+    const APP_VERSION = "v19";
+    // (Optional) if you want to display version again, add an element and set it here.
+
+    // Service worker (keep your existing sw.js as-is)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+      );
+    }
+
+    // Home button (scroll to top)
+    document.getElementById("btnHome").addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
     function normalize(s){ return String(s||"").toLowerCase(); }
     function escapeHTML(s){
@@ -216,9 +215,15 @@
     const suggestionsEl = document.getElementById("suggestions");
     const resultsEl = document.getElementById("results");
     const selectedEl = document.getElementById("selectedProduct");
+    const btnSearch = document.getElementById("btnSearch");
 
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
+
+    function setSelectedProduct(p){
+      SELECTED_PRODUCT = p || null;
+      selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
+    }
 
     async function api(action,payload){
       const r = await fetch(API_URL,{
@@ -226,30 +231,123 @@
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
         body:JSON.stringify({ action, payload })
       });
-      const t = await r.text();
-      try { return JSON.parse(t); } catch { return { ok:false }; }
+      const text = await r.text();
+      try { return JSON.parse(text); }
+      catch (e) { return { ok:false, error:"Non-JSON response from API", preview:text.slice(0,200) }; }
     }
 
     async function loadCatalog(){
       const d = await api("products",{});
-      PRODUCT_CATALOG = d?.products || [];
+      PRODUCT_CATALOG = (d && d.ok && Array.isArray(d.products)) ? d.products : [];
     }
 
     function renderSuggestions(list){
-      suggestionsEl.innerHTML = list.slice(0,10).map(p => `
+      if (!list.length) { suggestionsEl.innerHTML = ""; return; }
+      suggestionsEl.innerHTML = list.slice(0,12).map(p => `
         <div class="card suggestion" data-code="${escapeHTML(p.code)}">
           <div class="title">${escapeHTML(p.displayName)}</div>
-        </div>`).join("");
+        </div>
+      `).join("");
     }
 
-    qInput.addEventListener("input",()=>{
-      const t = normalize(qInput.value);
-      if (!t) { suggestionsEl.innerHTML=""; return; }
-      renderSuggestions(PRODUCT_CATALOG.filter(p =>
-        normalize(p.displayName + " " + p.keywords).includes(t)
-      ));
+    function filterCatalog(q){
+      const tokens = normalize(q).split(/\s+/).filter(Boolean);
+      if (!tokens.length) return [];
+      return PRODUCT_CATALOG.filter(p => {
+        const hay = normalize((p.displayName||"") + " " + (p.keywords||"") + " " + (p.code||""));
+        return tokens.every(t => hay.includes(t));
+      });
+    }
+
+    function exportCardHTML(exportData){
+      const rows = Array.isArray(exportData) ? exportData : [];
+      const cleaned = rows
+        .filter(r => Array.isArray(r))
+        .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
+        .filter(([k,v]) => k || v);
+
+      if (!cleaned.length) {
+        return `<div class="card"><div class="heroText">No data returned yet.</div></div>`;
+      }
+
+      const kvs = cleaned.map(([k,v]) => `
+        <div class="kv">
+          <div class="k">${escapeHTML(k)}</div>
+          <div class="v">${escapeHTML(v)}</div>
+        </div>
+      `).join("");
+
+      return `<div class="card">${kvs}</div>`;
+    }
+
+    async function runSearch(q, selectedProduct){
+      q = String(q || "").trim();
+      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
+
+      resultsEl.innerHTML = `<div class="card"><div class="heroText">Searching…</div></div>`;
+
+      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
+
+      if (selectedProduct && selectedProduct.ebayUrl) {
+        payload.ebayUrl = selectedProduct.ebayUrl;
+        payload.productCode = selectedProduct.code;
+        payload.productName = selectedProduct.displayName;
+      }
+
+      const data = await api("search", payload);
+
+      if (!data || !data.ok) {
+        resultsEl.innerHTML = `
+          <div class="card">
+            <b>Error</b>
+            <div class="heroText">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
+            ${data && data.preview ? `<div class="small" style="margin-top:8px;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
+          </div>
+        `;
+        return;
+      }
+
+      resultsEl.innerHTML = exportCardHTML(data.exportData);
+    }
+
+    // --- EVENTS (RESTORED) ---
+
+    // Typing: show suggestions + clear selection
+    qInput.addEventListener("input", () => {
+      setSelectedProduct(null);
+      renderSuggestions(filterCatalog(qInput.value));
     });
 
+    // Click suggestion: select + auto-search if it has ebayUrl
+    suggestionsEl.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-code]");
+      if (!card) return;
+
+      const code = card.getAttribute("data-code");
+      const p = PRODUCT_CATALOG.find(x => String(x.code) === String(code));
+      if (!p) return;
+
+      setSelectedProduct(p);
+      qInput.value = p.displayName;
+      suggestionsEl.innerHTML = "";
+
+      if (p.ebayUrl) runSearch(p.displayName, p);
+    });
+
+    // Search button: always search (use selected product if present)
+    btnSearch.addEventListener("click", () => {
+      runSearch(qInput.value, SELECTED_PRODUCT);
+    });
+
+    // Enter key: search
+    qInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runSearch(qInput.value, SELECTED_PRODUCT);
+      }
+    });
+
+    // init
     loadCatalog();
   </script>
 </body>
