@@ -11,240 +11,554 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 
   <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="theme-color" content="#0b0b0b" id="themeColorMeta">
 
   <style>
-    :root { --navH: 62px; --radius: 14px; }
+    :root{
+      --navH: 62px;
+      --radius: 14px;
+      --accentBlue: #005FA3; /* light-mode primary */
+      --searchMax: 720px;    /* keeps the input/card from going "too wide" */
+    }
 
-    body {
+    /* THEME TOKENS */
+    body{
       --bg:#0b0b0b;
-      --text:#fff;
+      --text:#ffffff;
       --cardBg:rgba(255,255,255,0.08);
       --cardBorder:rgba(255,255,255,0.12);
+      --muted:rgba(255,255,255,0.78);
+
       --inputBg:#111;
       --inputBorder:rgba(255,255,255,0.16);
-      --btnPrimaryBg:#fff;
-      --btnPrimaryText:#000;
+
+      --btnPrimaryBg:#ffffff;
+      --btnPrimaryText:#000000;
+
       --btnClearBg:transparent;
+      --btnClearText:#ffffff;
       --btnClearBorder:rgba(255,255,255,0.22);
+
       --navBg:#0b0b0b;
-      --accent:#005FA3;
+      --navBorder:rgba(255,255,255,0.12);
+      --navBtnBg:rgba(255,255,255,0.12);
+      --navBtnIcon:#ffffff;
+
+      --kvBorder:rgba(255,255,255,0.10);
     }
 
-    body.light {
-      --bg:#fff;
+    body.light{
+      --bg:#ffffff;
       --text:#0b0b0b;
-      --cardBg:#f3f3f3;
-      --cardBorder:#ddd;
-      --inputBg:#fff;
-      --inputBorder:#ccc;
-      --btnPrimaryBg:var(--accent);
-      --btnPrimaryText:#fff;
-      --btnClearBg:#E0E0E0;
+      --cardBg:rgba(0,0,0,0.05);
+      --cardBorder:rgba(0,0,0,0.10);
+      --muted:rgba(0,0,0,0.70);
+
+      --inputBg:#ffffff;
+      --inputBorder:rgba(0,0,0,0.18);
+
+      --btnPrimaryBg:var(--accentBlue);
+      --btnPrimaryText:#ffffff;
+
+      --btnClearBg:#E0E0E0;      /* requested */
+      --btnClearText:#000000;
       --btnClearBorder:#E0E0E0;
-      --navBg:#fff;
+
+      --navBg:#ffffff;
+      --navBorder:rgba(0,0,0,0.10);
+      --navBtnBg:var(--accentBlue);  /* requested: home button blue in light mode */
+      --navBtnIcon:#ffffff;          /* requested: icon white in light mode */
+
+      --kvBorder:rgba(0,0,0,0.10);
     }
 
-    html, body { height:100%; margin:0; }
-    body {
+    html, body { height:100%; }
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
       background:var(--bg);
       color:var(--text);
-      font-family:Arial,sans-serif;
+      transition: background 160ms ease, color 160ms ease;
     }
 
-    .content {
-      max-width:900px;
-      margin:0 auto;
-      padding:16px 16px calc(var(--navH) + 20px);
+    .content{
+      padding: 16px 16px calc(var(--navH) + 24px);
+      max-width: 900px;
+      margin: 0 auto;
+      box-sizing: border-box;
     }
 
-    /* ---------- HEADER ---------- */
-    .header {
-      text-align:center;
-      margin-bottom:14px;
-      position:relative;
+    /* HEADER ABOVE CARD */
+    .headerRow{
+      position: relative;
+      max-width: var(--searchMax);
+      margin: 6px auto 12px;
+      text-align: center;
     }
 
-    .appTitle {
-      font-family:"Bangers", cursive;
-      font-size:36px;
-      line-height:1;
+    .appTitle{
+      font-family: "Bangers", cursive;
+      font-size: 34px;
+      letter-spacing: 1px;
+      line-height: 1;
+      margin: 0;
     }
-    .appTitle .big { font-size:44px; }
+    .appTitle .big{ font-size: 42px; }
 
-    .version {
-      font-size:11px;
-      opacity:.6;
-      margin-top:4px;
+    .versionTag{
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.6;
     }
 
-    .themeToggle {
+    /* icon-only theme toggle */
+    .themeToggle{
       position:absolute;
       right:0;
       top:0;
-      width:42px;
-      height:42px;
-      border-radius:14px;
+      width:44px;
+      height:44px;
+      border-radius: 14px;
       border:1px solid var(--cardBorder);
-      background:var(--cardBg);
+      background: var(--cardBg);
+      color: var(--text);
       cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .themeIcon{ width:22px; height:22px; display:block; }
+
+    .card{
+      background: var(--cardBg);
+      border: 1px solid var(--cardBorder);
+      border-radius: 16px;
+      padding: 16px;
+      transition: background 160ms ease, border-color 160ms ease;
     }
 
-    /* ---------- SEARCH CARD (FIXED) ---------- */
-    .searchCard {
-      max-width:720px;          /* ← THIS FIXES IT */
-      margin:0 auto 18px;       /* ← CENTERED */
-      background:var(--cardBg);
-      border:1px solid var(--cardBorder);
-      border-radius:16px;
-      padding:16px;
+    /* SEARCH CARD WIDTH FIX (NOT TOO WIDE) */
+    .searchCard{
+      max-width: var(--searchMax);
+      margin: 0 auto 14px;
     }
 
-    .hero {
-      font-weight:700;
-      font-size:16px;
-      margin-bottom:12px;
+    .heroText{
+      font-size: 16px;
+      font-weight: 700; /* requested: bold */
+      line-height: 1.35;
+      margin-bottom: 12px;
     }
 
-    .searchWrap {
-      position:relative;
-    }
+    .searchWrap{ position: relative; width:100%; }
 
-    .searchIcon {
+    .searchIcon{
       position:absolute;
       left:12px;
       top:50%;
-      transform:translateY(-50%);
+      transform: translateY(-50%);
       width:18px;
       height:18px;
-      opacity:.6;
+      opacity: 0.7;
+      pointer-events:none;
+      color: var(--text);
     }
 
-    input {
+    input{
       width:100%;
-      padding:12px 12px 12px 40px;
-      border-radius:12px;
-      border:1px solid var(--inputBorder);
-      background:var(--inputBg);
-      color:var(--text);
-      font-size:16px;
+      box-sizing:border-box;
+      padding: 12px 12px 12px 40px;
+      border-radius: 12px;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
+      font-size: 16px;
+      outline:none;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
     }
 
-    button.primary,
-    button.clear {
+    button.primary{
       width:100%;
-      padding:12px;
       margin-top:10px;
-      border-radius:12px;
+      padding: 12px;
+      border:0;
+      border-radius: 12px;
+      background: var(--btnPrimaryBg);
+      color: var(--btnPrimaryText);
       font-weight:700;
       cursor:pointer;
+      transition: background 160ms ease, color 160ms ease;
     }
 
-    button.primary {
-      background:var(--btnPrimaryBg);
-      color:var(--btnPrimaryText);
-      border:0;
+    button.clearBtn{
+      width:100%;
+      margin-top:10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--btnClearBg);
+      color: var(--btnClearText);
+      border: 1px solid var(--btnClearBorder);
+      font-weight:700;
+      cursor:pointer;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
     }
 
-    button.clear {
-      background:var(--btnClearBg);
-      border:1px solid var(--btnClearBorder);
-      color:var(--text);
+    /* Suggestions */
+    .list{ margin-top: 12px; display:grid; gap: 10px; }
+    .suggestion{ cursor:pointer; }
+    .suggestion .title{ font-weight: 700; }
+
+    /* Results */
+    .resultsWrap{
+      max-width: 900px;
+      margin: 0 auto;
     }
 
-    /* ---------- RESULTS ---------- */
-    .results {
+    .kv{
       display:grid;
-      gap:10px;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--kvBorder);
     }
+    .kv:last-child{ border-bottom:0; }
+    .k{ opacity:0.85; }
+    .v{ font-weight:700; text-align:right; }
 
-    .kv {
-      display:grid;
-      grid-template-columns:1fr auto;
-      padding:10px 0;
-      border-bottom:1px solid rgba(255,255,255,0.12);
-    }
-    .kv:last-child { border-bottom:0; }
-    .v { font-weight:700; }
-
-    /* ---------- FOOTER ---------- */
-    .footer {
-      position:fixed;
-      bottom:0; left:0; right:0;
-      height:var(--navH);
-      background:var(--navBg);
+    /* Bottom nav (ONE home button) */
+    .bottomNav{
+      position: fixed;
+      left:0; right:0; bottom:0;
+      height: var(--navH);
+      background: var(--navBg);
+      border-top: 1px solid var(--navBorder);
+      z-index: 9999;
       display:flex;
       justify-content:center;
-      align-items:center;
+      transition: background 160ms ease, border-color 160ms ease;
     }
 
-    .homeBtn {
+    .bottomNavInner{
       width:100%;
-      max-width:900px;
-      margin:0 16px;
-      height:42px;
-      border-radius:14px;
+      max-width: var(--searchMax); /* requested: same width as search card */
+      padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+      box-sizing:border-box;
+    }
+
+    .navBtn{
+      width:100%;
+      height: 42px;
       border:0;
-      background:var(--accent);
-      color:#fff;
+      border-radius: 14px;
+      background: var(--navBtnBg);
+      color: var(--navBtnIcon);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: background 160ms ease, color 160ms ease;
+    }
+
+    .navIcon{
+      width: 22px;
+      height: 22px;
+      display:block;
     }
   </style>
 </head>
 
 <body>
   <main class="content">
-
-    <div class="header">
-      <div class="appTitle">
-        <span class="big">W</span>ax<span class="big">A</span>lert
-      </div>
-      <div class="version">Build v21.1</div>
-      <button class="themeToggle" id="themeBtn"></button>
-    </div>
-
-    <div class="searchCard">
-      <div class="hero">Real-time box prices. Zero guesswork.</div>
-
-      <div class="searchWrap">
-        <svg class="searchIcon" viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-          <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <input id="q" placeholder="What box are you searching for?" />
+    <section id="view-search">
+      <div class="headerRow">
+        <div class="appTitle">
+          <span class="big">W</span>ax<span class="big">A</span>lert
+        </div>
+        <div class="versionTag" id="versionTag"></div>
+        <button class="themeToggle" id="btnTheme" type="button" aria-label="Toggle theme"></button>
       </div>
 
-      <button class="primary" id="btnSearch">Search</button>
-      <button class="clear" id="btnClear">Clear</button>
-    </div>
+      <div class="card searchCard">
+        <div class="heroText">Real-time box prices. Zero guesswork.</div>
 
-    <div class="results" id="results"></div>
+        <div class="searchWrap">
+          <svg class="searchIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16.8 16.8 21 21"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input id="q" placeholder="What box are you searching for?" />
+        </div>
 
+        <div class="list" id="suggestions"></div>
+
+        <button class="primary" id="btnSearch" type="button">Search</button>
+        <button class="clearBtn" id="btnClear" type="button">Clear</button>
+
+        <div style="height:10px"></div>
+        <div class="small" id="selectedProduct" style="opacity:.75;font-size:12px;"></div>
+      </div>
+
+      <div class="resultsWrap">
+        <div class="list" id="results"></div>
+      </div>
+    </section>
   </main>
 
-  <div class="footer">
-    <button class="homeBtn">🏠</button>
-  </div>
+  <nav class="bottomNav" aria-label="Primary">
+    <div class="bottomNavInner">
+      <button class="navBtn" id="btnHome" type="button" aria-label="Home">
+        <!-- "cool" SVG home icon (not emoji) -->
+        <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 10.5L12 3l9 7.5"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 9.8V21h14V9.8"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 21v-7h4v7"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
 
   <script>
-    document.getElementById("btnClear").onclick = () => {
-      q.value = "";
-      results.innerHTML = "";
-      q.focus();
-    };
+    // ---------------- CONFIG ----------------
+    // Keep YOUR current Apps Script exec URL here:
+    const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
+    const APP_VERSION = "v21.2";
 
-    const themeBtn = document.getElementById("themeBtn");
-    const meta = document.getElementById("themeColorMeta");
+    document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
-    function setTheme(t){
-      document.body.classList.toggle("light", t==="light");
-      meta.content = t==="light" ? "#ffffff" : "#0b0b0b";
-      localStorage.setItem("waxalert_theme", t);
-      themeBtn.textContent = t==="light" ? "☀️" : "🌙";
+    // ---------------- PWA SERVICE WORKER ----------------
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+      );
     }
 
-    setTheme(localStorage.getItem("waxalert_theme") || "dark");
-    themeBtn.onclick = () =>
-      setTheme(document.body.classList.contains("light") ? "dark" : "light");
+    // ---------------- HOME BUTTON ----------------
+    document.getElementById("btnHome").addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      document.getElementById("q").focus();
+    });
+
+    // ---------------- THEME TOGGLE (moon/sun icon-only) ----------------
+    const themeMeta = document.getElementById("themeColorMeta");
+    const btnTheme = document.getElementById("btnTheme");
+
+    function iconMoon() {
+      return `
+        <svg class="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
+    function iconSun() {
+      return `
+        <svg class="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+
+    function applyTheme(mode) {
+      const isLight = mode === "light";
+      document.body.classList.toggle("light", isLight);
+      localStorage.setItem("waxalert_theme", isLight ? "light" : "dark");
+      btnTheme.innerHTML = isLight ? iconSun() : iconMoon();
+      if (themeMeta) themeMeta.setAttribute("content", isLight ? "#ffffff" : "#0b0b0b");
+    }
+
+    applyTheme(localStorage.getItem("waxalert_theme") === "light" ? "light" : "dark");
+    btnTheme.addEventListener("click", () => {
+      const next = document.body.classList.contains("light") ? "dark" : "light";
+      applyTheme(next);
+    });
+
+    // ---------------- HELPERS ----------------
+    function escapeHTML(s){
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
+    function normalize(s){ return String(s || "").toLowerCase(); }
+
+    async function api(action, payload) {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, payload })
+      });
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch (e) { return { ok:false, error:"Non-JSON response", preview:text.slice(0,300) }; }
+    }
+
+    // Render Export A1:B20 cleanly
+    function exportCardHTML(exportData) {
+      const rows = Array.isArray(exportData) ? exportData : [];
+      const cleaned = rows
+        .filter(r => Array.isArray(r))
+        .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
+        .filter(([k,v]) => k || v);
+
+      if (!cleaned.length) {
+        return `<div class="card"><div style="opacity:.8">No data returned yet.</div></div>`;
+      }
+
+      const kvs = cleaned.map(([k,v]) => `
+        <div class="kv">
+          <div class="k">${escapeHTML(k)}</div>
+          <div class="v">${escapeHTML(v)}</div>
+        </div>
+      `).join("");
+
+      return `<div class="card">${kvs}</div>`;
+    }
+
+    // ---------------- TYPEAHEAD CATALOG ----------------
+    let PRODUCT_CATALOG = [];
+    let SELECTED_PRODUCT = null;
+
+    const qInput = document.getElementById("q");
+    const suggestionsEl = document.getElementById("suggestions");
+    const resultsEl = document.getElementById("results");
+    const selectedEl = document.getElementById("selectedProduct");
+
+    function setSelectedProduct(p) {
+      SELECTED_PRODUCT = p || null;
+      selectedEl.textContent = p ? ("Selected: " + p.displayName) : "";
+    }
+
+    function renderSuggestions(list) {
+      if (!list.length) { suggestionsEl.innerHTML = ""; return; }
+      // v12 behavior: ONLY displayName (no keywords shown)
+      suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
+        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
+          <div class="title">${escapeHTML(p.displayName)}</div>
+        </div>
+      `).join("");
+    }
+
+    function filterCatalog(q) {
+      const t = normalize(q).trim();
+      if (!t) return [];
+      const tokens = t.split(/\s+/).filter(Boolean);
+
+      return PRODUCT_CATALOG.filter(p => {
+        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
+        return tokens.every(tok => hay.includes(tok));
+      });
+    }
+
+    async function loadCatalog() {
+      // cached first for speed
+      const cached = localStorage.getItem("waxalert_products_v1");
+      if (cached) {
+        try { PRODUCT_CATALOG = JSON.parse(cached) || []; } catch(e) {}
+      }
+
+      // live refresh
+      const data = await api("products", {});
+      if (data && data.ok && Array.isArray(data.products)) {
+        PRODUCT_CATALOG = data.products;
+        localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
+      }
+    }
+
+    // ---------------- SEARCH FLOW ----------------
+    async function runSearch(q, selectedProduct) {
+      q = String(q || "").trim();
+      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
+
+      resultsEl.innerHTML = `<div class="card"><div style="opacity:.8">Searching…</div></div>`;
+
+      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
+
+      if (selectedProduct && selectedProduct.ebayUrl) {
+        payload.ebayUrl = selectedProduct.ebayUrl;
+        payload.productCode = selectedProduct.code;
+        payload.productName = selectedProduct.displayName;
+      }
+
+      const data = await api("search", payload);
+
+      if (!data || !data.ok) {
+        resultsEl.innerHTML = `
+          <div class="card">
+            <b>Error</b>
+            <div style="opacity:.8;margin-top:6px;">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
+            ${data && data.preview ? `<div style="opacity:.7;font-size:12px;margin-top:8px;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
+          </div>
+        `;
+        return;
+      }
+
+      resultsEl.innerHTML = exportCardHTML(data.exportData);
+    }
+
+    // Typing shows suggestions and clears selection
+    qInput.addEventListener("input", () => {
+      setSelectedProduct(null);
+      const q = qInput.value.trim();
+      renderSuggestions(filterCatalog(q));
+    });
+
+    // Click suggestion => select + auto-search (if ebayUrl exists)
+    suggestionsEl.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-code]");
+      if (!card) return;
+
+      const code = card.getAttribute("data-code");
+      const product = PRODUCT_CATALOG.find(p => String(p.code) === String(code));
+      if (!product) return;
+
+      setSelectedProduct(product);
+      qInput.value = product.displayName;
+      suggestionsEl.innerHTML = "";
+
+      if (product.ebayUrl) {
+        runSearch(product.displayName, product);
+      }
+    });
+
+    // Search button
+    document.getElementById("btnSearch").addEventListener("click", () => {
+      runSearch(qInput.value.trim(), SELECTED_PRODUCT);
+    });
+
+    // Enter key triggers search
+    qInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runSearch(qInput.value.trim(), SELECTED_PRODUCT);
+      }
+    });
+
+    // Clear button
+    document.getElementById("btnClear").addEventListener("click", () => {
+      qInput.value = "";
+      suggestionsEl.innerHTML = "";
+      resultsEl.innerHTML = "";
+      setSelectedProduct(null);
+      qInput.focus();
+    });
+
+    // init
+    loadCatalog();
   </script>
 </body>
 </html>
