@@ -20,257 +20,231 @@
   <style>
     :root { --navH: 62px; --radius: 14px; }
 
-    /* THEME TOKENS */
+    /* ---------- THEME TOKENS ---------- */
     body {
-      --bg: #0b0b0b;
-      --text: #ffffff;
-      --cardBg: rgba(255,255,255,0.08);
-      --cardBorder: rgba(255,255,255,0.12);
-      --muted: rgba(255,255,255,0.70);
-      --inputBg: #111;
-      --inputBorder: rgba(255,255,255,0.16);
-      --btnPrimaryBg: #ffffff;
-      --btnPrimaryText: #000000;
-      --ghostBorder: rgba(255,255,255,0.22);
-      --navBg: #0b0b0b;
-      --navBorder: rgba(255,255,255,0.12);
-      --navBtnBg: rgba(255,255,255,0.12);
-      --navBtnBgActive: rgba(255,255,255,0.18);
-      --kvBorder: rgba(255,255,255,0.10);
-      --accentBlue: #005FA3; /* used in light mode primary button */
+      --bg:#0b0b0b;
+      --text:#ffffff;
+      --cardBg:rgba(255,255,255,0.08);
+      --cardBorder:rgba(255,255,255,0.12);
+      --muted:rgba(255,255,255,0.7);
+      --inputBg:#111;
+      --inputBorder:rgba(255,255,255,0.16);
+
+      --btnPrimaryBg:#ffffff;
+      --btnPrimaryText:#000000;
+
+      --btnClearBg:transparent;
+      --btnClearText:#ffffff;
+      --btnClearBorder:rgba(255,255,255,0.22);
+
+      --navBg:#0b0b0b;
+      --navBorder:rgba(255,255,255,0.12);
+      --navBtnBg:rgba(255,255,255,0.12);
+      --navBtnIcon:#ffffff;
+
+      --kvBorder:rgba(255,255,255,0.10);
+      --accentBlue:#005FA3;
     }
 
     body.light {
-      --bg: #ffffff;
-      --text: #0b0b0b;
-      --cardBg: rgba(0,0,0,0.05);
-      --cardBorder: rgba(0,0,0,0.10);
-      --muted: rgba(0,0,0,0.65);
-      --inputBg: #ffffff;
-      --inputBorder: rgba(0,0,0,0.18);
-      --btnPrimaryBg: var(--accentBlue);
-      --btnPrimaryText: #ffffff;
-      --ghostBorder: rgba(0,0,0,0.18);
-      --navBg: #ffffff;
-      --navBorder: rgba(0,0,0,0.10);
-      --navBtnBg: rgba(0,0,0,0.06);
-      --navBtnBgActive: rgba(0,0,0,0.10);
-      --kvBorder: rgba(0,0,0,0.10);
+      --bg:#ffffff;
+      --text:#0b0b0b;
+      --cardBg:rgba(0,0,0,0.05);
+      --cardBorder:rgba(0,0,0,0.10);
+      --muted:rgba(0,0,0,0.65);
+      --inputBg:#ffffff;
+      --inputBorder:rgba(0,0,0,0.18);
+
+      --btnPrimaryBg:var(--accentBlue);
+      --btnPrimaryText:#ffffff;
+
+      --btnClearBg:#E0E0E0;
+      --btnClearText:#000000;
+      --btnClearBorder:#E0E0E0;
+
+      --navBg:#ffffff;
+      --navBorder:rgba(0,0,0,0.10);
+      --navBtnBg:var(--accentBlue);
+      --navBtnIcon:#ffffff;
+
+      --kvBorder:rgba(0,0,0,0.10);
     }
 
-    html, body { height: 100%; }
+    html, body { height:100%; }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background 150ms ease, color 150ms ease;
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      transition:background 150ms,color 150ms;
     }
 
     .content {
-      padding: 16px 16px calc(var(--navH) + 24px);
-      max-width: 900px;
-      margin: 0 auto;
+      padding:16px 16px calc(var(--navH) + 24px);
+      max-width:900px;
+      margin:0 auto;
     }
 
-    /* v21 Header above card */
+    /* ---------- HEADER ---------- */
     .headerRow {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 12px;
-      position: relative;
-      margin: 6px 0 12px;
-    }
-
-    .headerBlock {
-      text-align: center;
-      margin: 0 auto;
-      padding-right: 56px; /* makes room for toggle so title stays visually centered */
-      padding-left: 56px;
-      width: 100%;
-      max-width: 900px;
-      box-sizing: border-box;
+      position:relative;
+      margin:6px 0 12px;
+      text-align:center;
     }
 
     .appTitle {
-      font-family: "Bangers", cursive;
-      font-size: 34px;
-      letter-spacing: 1px;
-      line-height: 1;
-      margin: 0;
+      font-family:"Bangers",cursive;
+      font-size:34px;
+      letter-spacing:1px;
+      line-height:1;
     }
-    .appTitle .big { font-size: 42px; }
+    .appTitle .big { font-size:42px; }
 
     .versionTag {
-      margin-top: 6px;
-      font-size: 11px;
-      opacity: 0.6;
-      color: var(--text);
+      margin-top:6px;
+      font-size:11px;
+      opacity:.6;
     }
 
+    .themeToggle {
+      position:absolute;
+      right:0;
+      top:0;
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--cardBorder);
+      background:var(--cardBg);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+    }
+
+    .themeIcon { width:22px;height:22px; }
+
+    /* ---------- CARD ---------- */
     .card {
-      background: var(--cardBg);
-      border: 1px solid var(--cardBorder);
-      border-radius: 16px;
-      padding: 16px;
+      background:var(--cardBg);
+      border:1px solid var(--cardBorder);
+      border-radius:16px;
+      padding:16px;
     }
 
     .heroText {
-      font-size: 16px;
-      line-height: 1.4;
-      opacity: 0.9;
-      margin-bottom: 12px;
-      color: var(--text);
+      font-size:16px;
+      font-weight:700; /* BOLD per v21 */
+      margin-bottom:12px;
     }
 
-    .small { opacity: 0.7; font-size: 12px; color: var(--text); }
-    .spacer { height: 12px; }
-
-    /* Search */
-    .searchWrap { position: relative; width: 100%; }
+    /* ---------- SEARCH ---------- */
+    .searchWrap { position:relative; }
     .searchIcon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 18px;
-      height: 18px;
-      opacity: 0.75;
-      pointer-events: none;
-      color: var(--text);
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      width:18px;height:18px;
+      opacity:.75;
     }
 
     input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px 12px 12px 40px;
-      border-radius: 12px;
-      border: 1px solid var(--inputBorder);
-      background: var(--inputBg);
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
-      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+      width:100%;
+      padding:12px 12px 12px 40px;
+      border-radius:12px;
+      border:1px solid var(--inputBorder);
+      background:var(--inputBg);
+      color:var(--text);
+      font-size:16px;
+      outline:none;
     }
 
     button.primary {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      border: 0;
-      border-radius: 12px;
-      background: var(--btnPrimaryBg);
-      color: var(--btnPrimaryText);
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 150ms ease, color 150ms ease;
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border-radius:12px;
+      border:0;
+      background:var(--btnPrimaryBg);
+      color:var(--btnPrimaryText);
+      font-weight:700;
+      cursor:pointer;
     }
 
     button.ghost {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--ghostBorder);
-      background: transparent;
-      color: var(--text);
-      font-weight: 700;
-      cursor: pointer;
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border-radius:12px;
+      background:var(--btnClearBg);
+      color:var(--btnClearText);
+      border:1px solid var(--btnClearBorder);
+      font-weight:700;
+      cursor:pointer;
     }
-    button.ghost:active { background: rgba(127,127,127,0.08); }
 
-    .list { margin-top: 12px; display: grid; gap: 10px; }
+    .list { margin-top:12px; display:grid; gap:10px; }
 
-    .suggestion { cursor: pointer; }
-    .suggestion .title { font-weight: 700; }
+    .suggestion { cursor:pointer; }
+    .suggestion .title { font-weight:700; }
 
-    /* Results */
+    /* ---------- RESULTS ---------- */
     .kv {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--kvBorder);
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      padding:10px 0;
+      border-bottom:1px solid var(--kvBorder);
     }
-    .kv:last-child { border-bottom: 0; }
-    .k { opacity: 0.85; }
-    .v { font-weight: 700; text-align: right; }
+    .kv:last-child { border-bottom:0; }
+    .k { opacity:.85; }
+    .v { font-weight:700; text-align:right; }
 
-    /* Bottom nav */
+    /* ---------- BOTTOM NAV ---------- */
     .bottomNav {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: var(--navH);
-      background: var(--navBg);
-      border-top: 1px solid var(--navBorder);
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      transition: background 150ms ease, border-color 150ms ease;
+      position:fixed;
+      left:0;right:0;bottom:0;
+      height:var(--navH);
+      background:var(--navBg);
+      border-top:1px solid var(--navBorder);
+      display:flex;
+      justify-content:center;
     }
 
     .bottomNavInner {
-      width: 100%;
-      max-width: 900px;
-      padding: 10px 16px max(10px, env(safe-area-inset-bottom));
-      box-sizing: border-box;
+      width:100%;
+      max-width:900px;
+      padding:10px 16px;
     }
 
     .navBtn {
-      width: 100%;
-      height: 42px;
-      border: 0;
-      border-radius: 14px;
-      background: var(--navBtnBg);
-      color: var(--text);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width:100%;
+      height:42px;
+      border-radius:14px;
+      border:0;
+      background:var(--navBtnBg);
+      color:var(--navBtnIcon);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
     }
 
-    .navBtn:active { background: var(--navBtnBgActive); }
-    .navIcon { width: 22px; height: 22px; display: block; }
-
-    /* THEME TOGGLE (icon-only, sun/moon) */
-    .themeToggle {
-      position: absolute;
-      right: 0;
-      top: 0;
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid var(--cardBorder);
-      background: var(--cardBg);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text);
-      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
-    }
-    .themeToggle:active { filter: brightness(1.05); }
-
-    .themeIcon { width: 22px; height: 22px; display: block; }
+    .navIcon { width:22px;height:22px; }
   </style>
 </head>
 
 <body>
   <main class="content">
-    <section id="view-search">
+    <section>
 
-      <!-- Header: title + version + theme toggle -->
       <div class="headerRow">
-        <div class="headerBlock">
-          <div class="appTitle">
-            <span class="big">W</span>ax<span class="big">A</span>lert
-          </div>
-          <div class="versionTag" id="versionTag"></div>
+        <div class="appTitle">
+          <span class="big">W</span>ax<span class="big">A</span>lert
         </div>
-
-        <!-- Icon-only toggle -->
-        <button class="themeToggle" id="btnTheme" type="button" aria-label="Toggle light mode"></button>
+        <div class="versionTag" id="versionTag"></div>
+        <button class="themeToggle" id="btnTheme" aria-label="Toggle theme"></button>
       </div>
 
       <div class="card">
@@ -279,11 +253,11 @@
         </div>
 
         <div class="searchWrap">
-          <svg class="searchIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg class="searchIcon" viewBox="0 0 24 24" fill="none">
             <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              stroke="currentColor" stroke-width="2"/>
             <path d="M16.8 16.8 21 21"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              stroke="currentColor" stroke-width="2"/>
           </svg>
           <input id="q" placeholder="What box are you searching for?" />
         </div>
@@ -291,29 +265,20 @@
         <div class="list" id="suggestions"></div>
 
         <button class="primary" id="btnSearch">Search</button>
-        <button class="ghost" id="btnClear" type="button">Clear</button>
-
-        <div class="spacer"></div>
-        <div class="small" id="selectedProduct"></div>
+        <button class="ghost" id="btnClear">Clear</button>
       </div>
 
       <div class="list" id="results"></div>
     </section>
   </main>
 
-  <nav class="bottomNav" aria-label="Primary">
+  <nav class="bottomNav">
     <div class="bottomNavInner">
       <button class="navBtn" id="btnHome" aria-label="Home">
-        <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M3 10.5L12 3l9 7.5"
-            stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 9.8V21h14V9.8"
-            stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10 21v-7h4v7"
-            stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"/>
+        <svg class="navIcon" viewBox="0 0 24 24" fill="none">
+          <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2"/>
+          <path d="M5 9.8V21h14V9.8" stroke="currentColor" stroke-width="2"/>
+          <path d="M10 21v-7h4v7" stroke="currentColor" stroke-width="2"/>
         </svg>
       </button>
     </div>
@@ -325,210 +290,105 @@
 
     document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
-    // Service worker
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () =>
         navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
       );
     }
 
-    // Home
-    document.getElementById("btnHome").addEventListener("click", () => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+    document.getElementById("btnHome").onclick = () =>
+      window.scrollTo({ top:0, behavior:"smooth" });
 
-    // ----- THEME TOGGLE -----
-    const themeMeta = document.getElementById("themeColorMeta");
+    /* ---------- THEME ---------- */
     const btnTheme = document.getElementById("btnTheme");
+    const themeMeta = document.getElementById("themeColorMeta");
 
-    function iconMoon() {
-      return `
-        <svg class="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      `;
+    const moon = `<svg class="themeIcon" viewBox="0 0 24 24" fill="none">
+      <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z"
+        stroke="currentColor" stroke-width="2"/>
+    </svg>`;
+
+    const sun = `<svg class="themeIcon" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 2v2M12 20v2M4 12H2M22 12h-2
+               M5 5l1.5 1.5M17.5 17.5 19 19
+               M19 5l-1.5 1.5M6.5 17.5 5 19"
+        stroke="currentColor" stroke-width="2"/>
+    </svg>`;
+
+    function applyTheme(mode){
+      const light = mode === "light";
+      document.body.classList.toggle("light", light);
+      localStorage.setItem("waxalert_theme", light ? "light" : "dark");
+      btnTheme.innerHTML = light ? sun : moon;
+      themeMeta.content = light ? "#ffffff" : "#0b0b0b";
     }
 
-    function iconSun() {
-      return `
-        <svg class="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      `;
-    }
+    applyTheme(localStorage.getItem("waxalert_theme") || "dark");
 
-    function applyTheme(mode) {
-      const isLight = mode === "light";
-      document.body.classList.toggle("light", isLight);
-      localStorage.setItem("waxalert_theme", isLight ? "light" : "dark");
+    btnTheme.onclick = () =>
+      applyTheme(document.body.classList.contains("light") ? "dark" : "light");
 
-      // icon shows the *current* mode (sun for light, moon for dark)
-      btnTheme.innerHTML = isLight ? iconSun() : iconMoon();
-
-      // update theme-color meta (helps mobile browser UI)
-      if (themeMeta) themeMeta.setAttribute("content", isLight ? "#ffffff" : "#0b0b0b");
-    }
-
-    // default dark, but remember preference
-    const savedTheme = localStorage.getItem("waxalert_theme");
-    applyTheme(savedTheme === "light" ? "light" : "dark");
-
-    btnTheme.addEventListener("click", () => {
-      const next = document.body.classList.contains("light") ? "dark" : "light";
-      applyTheme(next);
-    });
-
-    // ----- APP LOGIC -----
-    function normalize(s){ return String(s||"").toLowerCase(); }
-    function escapeHTML(s){
-      return String(s ?? "").replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
-
-    const qInput = document.getElementById("q");
-    const suggestionsEl = document.getElementById("suggestions");
-    const resultsEl = document.getElementById("results");
-    const selectedEl = document.getElementById("selectedProduct");
+    /* ---------- SEARCH LOGIC ---------- */
+    const q = document.getElementById("q");
+    const suggestions = document.getElementById("suggestions");
+    const results = document.getElementById("results");
     const btnSearch = document.getElementById("btnSearch");
     const btnClear = document.getElementById("btnClear");
 
-    let PRODUCT_CATALOG = [];
-    let SELECTED_PRODUCT = null;
+    let catalog = [];
+    let selected = null;
 
-    function setSelectedProduct(p){
-      SELECTED_PRODUCT = p || null;
-      selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
-    }
-
-    async function api(action,payload){
-      const r = await fetch(API_URL,{
+    const api = async (a,p) =>
+      JSON.parse(await (await fetch(API_URL,{
         method:"POST",
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body:JSON.stringify({ action, payload })
-      });
-      const text = await r.text();
-      try { return JSON.parse(text); }
-      catch (e) { return { ok:false, error:"Non-JSON response from API", preview:text.slice(0,200) }; }
-    }
+        body:JSON.stringify({ action:a, payload:p })
+      })).text());
 
-    async function loadCatalog(){
-      const d = await api("products",{});
-      PRODUCT_CATALOG = (d && d.ok && Array.isArray(d.products)) ? d.products : [];
-    }
+    fetch(API_URL,{method:"POST",headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:"products",payload:{}})})
+      .then(r=>r.json()).then(d=>catalog=d.products||[]);
 
-    function renderSuggestions(list){
-      if (!list.length) { suggestionsEl.innerHTML = ""; return; }
-      suggestionsEl.innerHTML = list.slice(0,12).map(p => `
-        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
-          <div class="title">${escapeHTML(p.displayName)}</div>
-        </div>
+    const filter = t => catalog.filter(p =>
+      (p.displayName+" "+p.keywords+" "+p.code).toLowerCase().includes(t));
+
+    q.oninput = () => {
+      selected=null;
+      const t=q.value.toLowerCase().trim();
+      suggestions.innerHTML = t ? filter(t).slice(0,12).map(p =>
+        `<div class="card suggestion" data-code="${p.code}">
+           <div class="title">${p.displayName}</div>
+         </div>`).join("") : "";
+    };
+
+    suggestions.onclick = e => {
+      const c=e.target.closest("[data-code]");
+      if(!c) return;
+      selected=catalog.find(p=>p.code===c.dataset.code);
+      q.value=selected.displayName;
+      suggestions.innerHTML="";
+      if(selected.ebayUrl) run();
+    };
+
+    async function run(){
+      const payload={ q:q.value };
+      if(selected?.ebayUrl){
+        payload.ebayUrl=selected.ebayUrl;
+        payload.productCode=selected.code;
+        payload.productName=selected.displayName;
+      }
+      results.innerHTML="<div class='card'>Searching…</div>";
+      const d=await fetch(API_URL,{method:"POST",headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:"search",payload})}).then(r=>r.json());
+      results.innerHTML=d.exportData.map(r=>`
+        <div class="kv"><div class="k">${r[0]}</div><div class="v">${r[1]}</div></div>
       `).join("");
     }
 
-    function filterCatalog(q){
-      const tokens = normalize(q).split(/\s+/).filter(Boolean);
-      if (!tokens.length) return [];
-      return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize((p.displayName||"") + " " + (p.keywords||"") + " " + (p.code||""));
-        return tokens.every(t => hay.includes(t));
-      });
-    }
-
-    function exportCardHTML(exportData){
-      const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => Array.isArray(r))
-        .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
-        .filter(([k,v]) => k || v);
-
-      if (!cleaned.length) {
-        return `<div class="card"><div class="heroText">No data returned yet.</div></div>`;
-      }
-
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k)}</div>
-          <div class="v">${escapeHTML(v)}</div>
-        </div>
-      `).join("");
-
-      return `<div class="card">${kvs}</div>`;
-    }
-
-    async function runSearch(q, selectedProduct){
-      q = String(q || "").trim();
-      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
-
-      resultsEl.innerHTML = `<div class="card"><div class="heroText">Searching…</div></div>`;
-
-      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
-
-      if (selectedProduct && selectedProduct.ebayUrl) {
-        payload.ebayUrl = selectedProduct.ebayUrl;
-        payload.productCode = selectedProduct.code;
-        payload.productName = selectedProduct.displayName;
-      }
-
-      const data = await api("search", payload);
-
-      if (!data || !data.ok) {
-        resultsEl.innerHTML = `
-          <div class="card">
-            <b>Error</b>
-            <div class="heroText">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-          </div>
-        `;
-        return;
-      }
-
-      resultsEl.innerHTML = exportCardHTML(data.exportData);
-    }
-
-    qInput.addEventListener("input", () => {
-      setSelectedProduct(null);
-      renderSuggestions(filterCatalog(qInput.value));
-    });
-
-    suggestionsEl.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-code]");
-      if (!card) return;
-
-      const code = card.getAttribute("data-code");
-      const p = PRODUCT_CATALOG.find(x => String(x.code) === String(code));
-      if (!p) return;
-
-      setSelectedProduct(p);
-      qInput.value = p.displayName;
-      suggestionsEl.innerHTML = "";
-
-      if (p.ebayUrl) runSearch(p.displayName, p);
-    });
-
-    btnSearch.addEventListener("click", () => {
-      runSearch(qInput.value, SELECTED_PRODUCT);
-    });
-
-    qInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        runSearch(qInput.value, SELECTED_PRODUCT);
-      }
-    });
-
-    btnClear.addEventListener("click", () => {
-      qInput.value = "";
-      suggestionsEl.innerHTML = "";
-      resultsEl.innerHTML = "";
-      setSelectedProduct(null);
-      qInput.focus();
-    });
-
-    loadCatalog();
+    btnSearch.onclick = run;
+    q.onkeydown = e => e.key==="Enter" && (e.preventDefault(),run());
+    btnClear.onclick = () => {
+      q.value=""; suggestions.innerHTML=""; results.innerHTML=""; selected=null; q.focus();
+    };
   </script>
 </body>
 </html>
