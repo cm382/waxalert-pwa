@@ -40,45 +40,41 @@
 
     input {
       width: 100%;
-      box-sizing: border-box;
       padding: 12px;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.16);
       background:#111;
       color:#fff;
       font-size:16px;
-      outline: none;
     }
-    button.primary {
+
+    button.primary, button.ghost {
       width:100%;
       margin-top:10px;
       padding: 12px;
-      border:0;
       border-radius: 12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    button.primary {
+      border:0;
       background:#fff;
       color:#000;
-      font-weight:700;
-      cursor:pointer;
     }
+
     button.ghost {
-      width:100%;
-      margin-top:10px;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.20);
-      background: transparent;
+      border:1px solid rgba(255,255,255,0.2);
+      background:transparent;
       color:#fff;
-      cursor:pointer;
     }
 
     .list { margin-top: 12px; display: grid; gap: 10px; }
 
-    /* Suggestions */
-    .suggestion { cursor: pointer; }
-    .suggestion .title { font-weight: 700; }
-    .suggestion .meta { opacity: 0.8; font-size: 12px; margin-top: 4px; }
+    .suggestion { cursor:pointer; }
+    .suggestion .title { font-weight:700; }
+    .suggestion .meta { font-size:12px; opacity:0.8; }
 
-    /* Bottom nav */
     .bottomNav {
       position: fixed;
       left: 0; right: 0; bottom: 0;
@@ -86,363 +82,171 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      padding: 10px 10px max(10px, env(safe-area-inset-bottom));
+      padding: 10px;
       background: #0b0b0b;
       border-top: 1px solid rgba(255,255,255,0.12);
-      z-index: 9999;
       max-width: 900px;
       margin: 0 auto;
     }
-    @media (min-width: 900px) {
-      .bottomNav { left: 50%; transform: translateX(-50%); }
-    }
+
     .navBtn {
-      border: 0;
-      border-radius: var(--radius);
-      background: transparent;
-      color: #fff;
-      font-size: 13px;
-      padding: 10px 6px;
-      cursor: pointer;
-      opacity: 0.75;
+      border:0;
+      background:transparent;
+      color:#fff;
+      opacity:0.7;
+      padding:10px;
+      border-radius:14px;
     }
+
     .navBtn.active {
       background: rgba(255,255,255,0.12);
-      opacity: 1;
+      opacity:1;
     }
 
     .view { display:none; }
     .view.active { display:block; }
 
     .kv {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,0.1);
     }
-    .kv:last-child { border-bottom: 0; }
-    .k { opacity: 0.85; }
-    .v { font-weight: 700; text-align: right; }
-    a { color: #fff; }
   </style>
 </head>
 
 <body>
-  <main class="content">
-    <!-- SEARCH -->
-    <section class="view active" id="view-search">
-      <div class="card">
-        <div class="row" style="justify-content: space-between;">
-          <h2>WaxAlert</h2>
-          <div class="small" id="buildTag"></div>
-        </div>
-        <div class="muted">
-          Start typing. Tap a match to use the exact Products eBayURL (best results).
-        </div>
-        <div class="spacer"></div>
+<main class="content">
 
-        <input id="q" placeholder="Type: dune chrome hobby, topps chrome hobby, etc." />
+<section class="view active" id="view-search">
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <h2>WaxAlert</h2>
+      <div class="small" id="buildTag"></div>
+    </div>
 
-        <!-- typeahead results -->
-        <div class="list" id="suggestions"></div>
+    <div class="muted">
+      Start typing. Tap a match to use the exact Products eBayURL.
+    </div>
 
-        <button class="primary" id="btnSearch">Search</button>
-        <button class="ghost" id="btnLast">Use last query</button>
+    <div class="small" id="catalogStatus"></div>
+    <div class="spacer"></div>
 
-        <div class="spacer"></div>
-        <div class="small" id="lastQuery"></div>
-        <div class="small" id="selectedProduct"></div>
-      </div>
+    <input id="q" placeholder="Type: dune chrome hobby, topps chrome hobby" />
+    <div class="list" id="suggestions"></div>
 
-      <div class="list" id="results"></div>
-    </section>
+    <button class="primary" id="btnSearch">Search</button>
+    <button class="ghost" id="btnLast">Use last query</button>
 
-    <!-- PRICES -->
-    <section class="view" id="view-prices">
-      <div class="card">
-        <h2>Prices</h2>
-        <div class="muted">
-          Next: map Export rows into a cleaner “Avg / Count / Low / High” layout.
-        </div>
-      </div>
-    </section>
+    <div class="small" id="lastQuery"></div>
+    <div class="small" id="selectedProduct"></div>
+  </div>
 
-    <!-- ALERTS -->
-    <section class="view" id="view-alerts">
-      <div class="card">
-        <h2>Alerts</h2>
-        <div class="muted">
-          Later: track + notify when under $X (Sheets + Apps Script trigger).
-        </div>
-      </div>
-    </section>
+  <div class="list" id="results"></div>
+</section>
 
-    <!-- SAVED / DEBUG -->
-    <section class="view" id="view-saved">
-      <div class="card">
-        <h2>Export Debug</h2>
-        <div class="muted">
-          Pulls current Export!A1:B20 without running a new search.
-        </div>
-        <button class="primary" id="btnExport">Refresh Export</button>
-      </div>
-      <div class="list" id="exportView"></div>
-    </section>
-  </main>
+</main>
 
-  <nav class="bottomNav" aria-label="Primary">
-    <button class="navBtn active" data-target="view-search">Search</button>
-    <button class="navBtn" data-target="view-prices">Prices</button>
-    <button class="navBtn" data-target="view-alerts">Alerts</button>
-    <button class="navBtn" data-target="view-saved">Saved</button>
-  </nav>
+<nav class="bottomNav">
+  <button class="navBtn active">Search</button>
+</nav>
 
-  <script>
-    // ---------------- CONFIG ----------------
-    const API_URL = "https://script.google.com/macros/s/AKfycbyHeOMZV8sf2XwvAKxJwVFDOxeXBiJJ2HkILf3BlkaAx7ytONz7NTwkwozQucvxEEsCig/exec";
+<script>
+/* ---------------- CONFIG ---------------- */
+const API_URL = "https://script.google.com/macros/s/AKfycbyHeOMZV8sf2XwvAKxJwVFDOxeXBiJJ2HkILf3BlkaAx7ytONz7NTwkwozQucvxEEsCig/exec";
+const APP_VERSION = "2026-01-04-01";
 
-    // bump this any time you deploy so you can confirm you're seeing the latest build
-    const APP_VERSION = "2026-01-04-01";
-    document.getElementById("buildTag").textContent = "v" + APP_VERSION;
+document.getElementById("buildTag").textContent = "v" + APP_VERSION;
 
-    // ---------------- PWA SERVICE WORKER ----------------
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () =>
-        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
-      );
-    }
+/* ---------------- SERVICE WORKER ---------------- */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () =>
+    navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+  );
+}
 
-    // ---------------- NAV ----------------
-    const buttons = [...document.querySelectorAll(".navBtn")];
-    const views = [...document.querySelectorAll(".view")];
-    function showView(id) {
-      views.forEach(v => v.classList.toggle("active", v.id === id));
-      buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
-    buttons.forEach(btn => btn.addEventListener("click", () => showView(btn.dataset.target)));
+/* ---------------- HELPERS ---------------- */
+const catalogStatusEl = document.getElementById("catalogStatus");
+function setCatalogStatus(msg){ catalogStatusEl.textContent = msg || ""; }
 
-    // ---------------- HELPERS ----------------
-    function escapeHTML(s){
-      return String(s).replace(/[&<>"']/g, m => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-    }
+function normalize(s){ return String(s||"").toLowerCase(); }
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
 
-    function normalize(s) {
-      return String(s || "").toLowerCase();
-    }
+/* ---------------- API ---------------- */
+async function api(action,payload){
+  const r = await fetch(API_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body:JSON.stringify({action,payload})
+  });
+  const t = await r.text();
+  try { return JSON.parse(t); }
+  catch { return { ok:false,error:"Non-JSON response",preview:t.slice(0,200) }; }
+}
 
-    function setLastQuery(q) {
-      localStorage.setItem("waxalert_last_query", q);
-      document.getElementById("lastQuery").textContent = q ? ("Last query: " + q) : "";
-    }
-    function getLastQuery() {
-      return localStorage.getItem("waxalert_last_query") || "";
-    }
-    setLastQuery(getLastQuery());
+/* ---------------- CATALOG ---------------- */
+let PRODUCT_CATALOG = [];
+let SELECTED_PRODUCT = null;
 
-    // Safer API helper: handles non-JSON responses (e.g., Apps Script permission HTML)
-    async function api(action, payload) {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, payload })
-      });
+async function loadCatalog(){
+  const cached = localStorage.getItem("waxalert_products_v1");
+  if(cached){
+    PRODUCT_CATALOG = JSON.parse(cached)||[];
+    setCatalogStatus(`Catalog: ${PRODUCT_CATALOG.length} (cached)`);
+  } else {
+    setCatalogStatus("Catalog: loading…");
+  }
 
-      const text = await res.text();
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        return {
-          ok: false,
-          error: "Non-JSON response from Apps Script (check deployment access/permissions).",
-          status: res.status,
-          preview: text.slice(0, 300)
-        };
-      }
-    }
+  const data = await api("products",{});
+  if(!data || !data.ok || !Array.isArray(data.products)){
+    setCatalogStatus("Catalog API error");
+    console.log(data);
+    return;
+  }
 
-    // Render Export A1:B20 (2 columns) into a clean key/value card
-    function exportCardHTML(exportData, ebaySoldUrl) {
-      const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
-        .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
+  PRODUCT_CATALOG = data.products;
+  localStorage.setItem("waxalert_products_v1",JSON.stringify(PRODUCT_CATALOG));
+  setCatalogStatus(`Catalog: ${PRODUCT_CATALOG.length} (live)`);
+}
 
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k || "")}</div>
-          <div class="v">${escapeHTML(v || "")}</div>
-        </div>
-      `).join("");
+function filterCatalog(q){
+  const tokens = normalize(q).split(/\s+/).filter(Boolean);
+  return PRODUCT_CATALOG.filter(p=>{
+    const hay = normalize(p.displayName+" "+p.keywords+" "+p.code);
+    return tokens.every(t=>hay.includes(t));
+  });
+}
 
-      const link = ebaySoldUrl ? `
-        <div class="spacer"></div>
-        <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
-      ` : "";
+/* ---------------- TYPEAHEAD ---------------- */
+const qInput = document.getElementById("q");
+const suggestionsEl = document.getElementById("suggestions");
+const selectedEl = document.getElementById("selectedProduct");
 
-      return `
-        <div class="card">
-          ${kvs || `<div class="muted">No export data returned yet. Check Export!A1:B20 and formula refresh.</div>`}
-          ${link}
-        </div>
-      `;
-    }
+qInput.addEventListener("input",()=>{
+  SELECTED_PRODUCT=null;
+  const m = filterCatalog(qInput.value);
+  suggestionsEl.innerHTML = m.slice(0,12).map(p=>`
+    <div class="card suggestion" data-code="${p.code}">
+      <div class="title">${escapeHTML(p.displayName)}</div>
+      <div class="meta">${escapeHTML(p.keywords||"")}</div>
+    </div>
+  `).join("");
+});
 
-    // ---------------- TYPEAHEAD CATALOG ----------------
-    let PRODUCT_CATALOG = [];
-    let SELECTED_PRODUCT = null;
+suggestionsEl.addEventListener("click",e=>{
+  const c = e.target.closest("[data-code]");
+  if(!c) return;
+  const p = PRODUCT_CATALOG.find(x=>x.code===c.dataset.code);
+  if(!p) return;
+  SELECTED_PRODUCT=p;
+  qInput.value=p.displayName;
+  selectedEl.textContent=`Selected: ${p.displayName}`;
+  suggestionsEl.innerHTML="";
+});
 
-    const suggestionsEl = document.getElementById("suggestions");
-    const selectedEl = document.getElementById("selectedProduct");
-
-    function setSelectedProduct(p) {
-      SELECTED_PRODUCT = p || null;
-      if (!SELECTED_PRODUCT) {
-        selectedEl.textContent = "";
-        return;
-      }
-      selectedEl.textContent = "Selected: " + SELECTED_PRODUCT.displayName + " (" + SELECTED_PRODUCT.code + ")";
-    }
-
-    function renderSuggestions(list) {
-      if (!list.length) {
-        suggestionsEl.innerHTML = "";
-        return;
-      }
-      suggestionsEl.innerHTML = list.slice(0, 12).map(p => `
-        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
-          <div class="title">${escapeHTML(p.displayName)}</div>
-          <div class="meta">${escapeHTML(p.keywords || p.code)}</div>
-        </div>
-      `).join("");
-    }
-
-    function filterCatalog(q) {
-      const t = normalize(q).trim();
-      if (!t) return [];
-      return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
-        return hay.includes(t);
-      });
-    }
-
-    async function loadCatalog() {
-      // use cached catalog instantly
-      const cached = localStorage.getItem("waxalert_products_v1");
-      if (cached) {
-        try { PRODUCT_CATALOG = JSON.parse(cached) || []; } catch(e) {}
-      }
-
-      // refresh from API
-      try {
-        const data = await api("products", {});
-        if (data && data.ok && Array.isArray(data.products)) {
-          PRODUCT_CATALOG = data.products;
-          localStorage.setItem("waxalert_products_v1", JSON.stringify(PRODUCT_CATALOG));
-        }
-      } catch (e) {
-        // cached still works if API fails
-      }
-    }
-
-    // ---------------- SEARCH FLOW ----------------
-    const qInput = document.getElementById("q");
-    const resultsEl = document.getElementById("results");
-
-    async function runSearch(q, selectedProduct) {
-      q = String(q || "").trim();
-      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
-
-      // Persist the last query as what user sees
-      setLastQuery(q || (selectedProduct ? selectedProduct.displayName : ""));
-
-      resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
-
-      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
-
-      if (selectedProduct && selectedProduct.ebayUrl) {
-        payload.ebayUrl = selectedProduct.ebayUrl;
-        payload.productCode = selectedProduct.code;
-        payload.productName = selectedProduct.displayName;
-      }
-
-      const data = await api("search", payload);
-
-      if (!data || !data.ok) {
-        resultsEl.innerHTML = `
-          <div class="card">
-            <b>Error</b>
-            <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-            ${data && data.preview ? `<div class="small" style="margin-top:8px;opacity:0.75;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
-          </div>
-        `;
-        return;
-      }
-
-      resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
-    }
-
-    // Typing shows suggestions and clears selection
-    qInput.addEventListener("input", () => {
-      setSelectedProduct(null);
-      const q = qInput.value.trim();
-      const matches = filterCatalog(q);
-      renderSuggestions(matches);
-    });
-
-    // Tap a suggestion => select and immediately search using product ebayUrl
-    suggestionsEl.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-code]");
-      if (!card) return;
-
-      const code = card.getAttribute("data-code");
-      const product = PRODUCT_CATALOG.find(p => p.code === code);
-      if (!product) return;
-
-      setSelectedProduct(product);
-      qInput.value = product.displayName;
-      suggestionsEl.innerHTML = "";
-      runSearch(product.displayName, product);
-    });
-
-    // Search button: if user selected product, use it; else free-text generic
-    document.getElementById("btnSearch").addEventListener("click", () => {
-      const q = qInput.value.trim();
-      runSearch(q, SELECTED_PRODUCT);
-    });
-
-    document.getElementById("btnLast").addEventListener("click", () => {
-      const q = getLastQuery();
-      if (q) {
-        qInput.value = q;
-        runSearch(q, null);
-      }
-    });
-
-    // Enter key triggers search (free-text unless they tapped a product)
-    qInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        runSearch(qInput.value.trim(), SELECTED_PRODUCT);
-      }
-    });
-
-    // ---------------- EXPORT DEBUG VIEW ----------------
-    const exportEl = document.getElementById("exportView");
-    document.getElementById("btnExport").addEventListener("click", async () => {
-      exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
-      const data = await api("export", {});
-      if (!data || !data.ok) {
-        exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div></div>`;
-        return;
-      }
-      exportEl.innerHTML = exportCardHTML(data.exportData, "");
-    });
-
-    // init
-    loadCatalog();
-  </script>
+/* ---------------- INIT ---------------- */
+loadCatalog();
+</script>
 </body>
 </html>
