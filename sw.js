@@ -1,9 +1,14 @@
-const CACHE = "waxalert-v4";
+// WaxAlert Service Worker (V6)
+// - Deterministic updates (network-first for index.html)
+// - Cache-first for static same-origin assets
+// - Never caches cross-origin (Apps Script) or non-GET
+
+const CACHE = "waxalert-v6";
+
 const APP_SHELL = [
   "/",
   "/index.html",
   "/manifest.webmanifest",
-  "/sw.js",
   "/icons/icon-192.png",
   "/icons/icon-512.png"
 ];
@@ -31,10 +36,27 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // Only handle same-origin (prevents caching script.google.com, etc.)
+  // Only handle same-origin
   if (url.origin !== self.location.origin) return;
 
-  // App shell: cache-first
+  // Always prefer network for index.html so deploys show up immediately
+  if (url.pathname === "/" || url.pathname === "/index.html") {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const res = await fetch(req, { cache: "no-store" });
+        cache.put("/index.html", res.clone());
+        cache.put("/", res.clone());
+        return res;
+      } catch (e) {
+        // offline fallback
+        return (await cache.match("/index.html")) || Response.error();
+      }
+    })());
+    return;
+  }
+
+  // App shell files: cache-first
   if (APP_SHELL.includes(url.pathname)) {
     event.respondWith(
       caches.match(req).then((cached) => cached || fetch(req))
@@ -42,30 +64,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navigations: stale-while-revalidate with fallback to cached index
-  if (req.mode === "navigate" || req.destination === "document") {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-
-      // Try cached page for this exact navigation request
-      const cached = await cache.match(req);
-
-      const networkPromise = fetch(req)
-        .then((res) => {
-          // Cache the actual navigation response
-          cache.put(req, res.clone());
-          // Also refresh index.html as a fallback shell
-          cache.put("/index.html", res.clone());
-          return res;
-        })
-        .catch(() => null);
-
-      return cached || (await networkPromise) || (await cache.match("/index.html")) || Response.error();
-    })());
-    return;
-  }
-
-  // Static assets: cache-first
+  // Static assets: cache-first then network
   const isStatic = ["style", "script", "image", "font"].includes(req.destination);
   if (isStatic) {
     event.respondWith((async () => {
