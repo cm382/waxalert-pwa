@@ -15,16 +15,56 @@
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="theme-color" content="#0b0b0b">
+  <meta name="theme-color" content="#0b0b0b" id="themeColorMeta">
 
   <style>
     :root { --navH: 62px; --radius: 14px; }
+
+    /* THEME TOKENS */
+    body {
+      --bg: #0b0b0b;
+      --text: #ffffff;
+      --cardBg: rgba(255,255,255,0.08);
+      --cardBorder: rgba(255,255,255,0.12);
+      --muted: rgba(255,255,255,0.70);
+      --inputBg: #111;
+      --inputBorder: rgba(255,255,255,0.16);
+      --btnPrimaryBg: #ffffff;
+      --btnPrimaryText: #000000;
+      --ghostBorder: rgba(255,255,255,0.22);
+      --navBg: #0b0b0b;
+      --navBorder: rgba(255,255,255,0.12);
+      --navBtnBg: rgba(255,255,255,0.12);
+      --navBtnBgActive: rgba(255,255,255,0.18);
+      --kvBorder: rgba(255,255,255,0.10);
+      --accentBlue: #005FA3; /* used in light mode primary button */
+    }
+
+    body.light {
+      --bg: #ffffff;
+      --text: #0b0b0b;
+      --cardBg: rgba(0,0,0,0.05);
+      --cardBorder: rgba(0,0,0,0.10);
+      --muted: rgba(0,0,0,0.65);
+      --inputBg: #ffffff;
+      --inputBorder: rgba(0,0,0,0.18);
+      --btnPrimaryBg: var(--accentBlue);
+      --btnPrimaryText: #ffffff;
+      --ghostBorder: rgba(0,0,0,0.18);
+      --navBg: #ffffff;
+      --navBorder: rgba(0,0,0,0.10);
+      --navBtnBg: rgba(0,0,0,0.06);
+      --navBtnBgActive: rgba(0,0,0,0.10);
+      --kvBorder: rgba(0,0,0,0.10);
+    }
+
     html, body { height: 100%; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #0b0b0b;
-      color: #fff;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 150ms ease, color 150ms ease;
     }
 
     .content {
@@ -33,10 +73,24 @@
       margin: 0 auto;
     }
 
-    /* v20: Title ABOVE card */
+    /* v21 Header above card */
+    .headerRow {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      margin: 6px 0 12px;
+    }
+
     .headerBlock {
       text-align: center;
-      margin: 6px 0 12px;
+      margin: 0 auto;
+      padding-right: 56px; /* makes room for toggle so title stays visually centered */
+      padding-left: 56px;
+      width: 100%;
+      max-width: 900px;
+      box-sizing: border-box;
     }
 
     .appTitle {
@@ -52,24 +106,25 @@
       margin-top: 6px;
       font-size: 11px;
       opacity: 0.6;
+      color: var(--text);
     }
 
     .card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--cardBg);
+      border: 1px solid var(--cardBorder);
       border-radius: 16px;
       padding: 16px;
     }
 
-    /* Hero text (left aligned) */
     .heroText {
       font-size: 16px;
       line-height: 1.4;
       opacity: 0.9;
       margin-bottom: 12px;
+      color: var(--text);
     }
 
-    .small { opacity: 0.7; font-size: 12px; }
+    .small { opacity: 0.7; font-size: 12px; color: var(--text); }
     .spacer { height: 12px; }
 
     /* Search */
@@ -83,6 +138,7 @@
       height: 18px;
       opacity: 0.75;
       pointer-events: none;
+      color: var(--text);
     }
 
     input {
@@ -90,11 +146,12 @@
       box-sizing: border-box;
       padding: 12px 12px 12px 40px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: #111;
-      color: #fff;
+      border: 1px solid var(--inputBorder);
+      background: var(--inputBg);
+      color: var(--text);
       font-size: 16px;
       outline: none;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
     }
 
     button.primary {
@@ -103,25 +160,25 @@
       padding: 12px;
       border: 0;
       border-radius: 12px;
-      background: #fff;
-      color: #000;
+      background: var(--btnPrimaryBg);
+      color: var(--btnPrimaryText);
       font-weight: 700;
       cursor: pointer;
+      transition: background 150ms ease, color 150ms ease;
     }
 
-    /* v20: Clear button */
     button.ghost {
       width: 100%;
       margin-top: 10px;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.22);
+      border: 1px solid var(--ghostBorder);
       background: transparent;
-      color: #fff;
+      color: var(--text);
       font-weight: 700;
       cursor: pointer;
     }
-    button.ghost:active { background: rgba(255,255,255,0.08); }
+    button.ghost:active { background: rgba(127,127,127,0.08); }
 
     .list { margin-top: 12px; display: grid; gap: 10px; }
 
@@ -134,7 +191,7 @@
       grid-template-columns: 1fr auto;
       gap: 10px;
       padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
+      border-bottom: 1px solid var(--kvBorder);
     }
     .kv:last-child { border-bottom: 0; }
     .k { opacity: 0.85; }
@@ -145,11 +202,12 @@
       position: fixed;
       left: 0; right: 0; bottom: 0;
       height: var(--navH);
-      background: #0b0b0b;
-      border-top: 1px solid rgba(255,255,255,0.12);
+      background: var(--navBg);
+      border-top: 1px solid var(--navBorder);
       z-index: 9999;
       display: flex;
       justify-content: center;
+      transition: background 150ms ease, border-color 150ms ease;
     }
 
     .bottomNavInner {
@@ -164,16 +222,37 @@
       height: 42px;
       border: 0;
       border-radius: 14px;
-      background: rgba(255,255,255,0.12);
-      color: #fff;
+      background: var(--navBtnBg);
+      color: var(--text);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .navBtn:active { background: rgba(255,255,255,0.18); }
+    .navBtn:active { background: var(--navBtnBgActive); }
     .navIcon { width: 22px; height: 22px; display: block; }
+
+    /* THEME TOGGLE (icon-only, sun/moon) */
+    .themeToggle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--cardBorder);
+      background: var(--cardBg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+    .themeToggle:active { filter: brightness(1.05); }
+
+    .themeIcon { width: 22px; height: 22px; display: block; }
   </style>
 </head>
 
@@ -181,12 +260,17 @@
   <main class="content">
     <section id="view-search">
 
-      <!-- v20: Title + version ABOVE the card -->
-      <div class="headerBlock">
-        <div class="appTitle">
-          <span class="big">W</span>ax<span class="big">A</span>lert
+      <!-- Header: title + version + theme toggle -->
+      <div class="headerRow">
+        <div class="headerBlock">
+          <div class="appTitle">
+            <span class="big">W</span>ax<span class="big">A</span>lert
+          </div>
+          <div class="versionTag" id="versionTag"></div>
         </div>
-        <div class="versionTag" id="versionTag"></div>
+
+        <!-- Icon-only toggle -->
+        <button class="themeToggle" id="btnTheme" type="button" aria-label="Toggle light mode"></button>
       </div>
 
       <div class="card">
@@ -207,8 +291,6 @@
         <div class="list" id="suggestions"></div>
 
         <button class="primary" id="btnSearch">Search</button>
-
-        <!-- v20: Clear button -->
         <button class="ghost" id="btnClear" type="button">Clear</button>
 
         <div class="spacer"></div>
@@ -239,9 +321,8 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v20";
+    const APP_VERSION = "v21";
 
-    // Show version under title (v20)
     document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
     // Service worker
@@ -251,11 +332,57 @@
       );
     }
 
-    // Home button
+    // Home
     document.getElementById("btnHome").addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
+    // ----- THEME TOGGLE -----
+    const themeMeta = document.getElementById("themeColorMeta");
+    const btnTheme = document.getElementById("btnTheme");
+
+    function iconMoon() {
+      return `
+        <svg class="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
+
+    function iconSun() {
+      return `
+        <svg class="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+
+    function applyTheme(mode) {
+      const isLight = mode === "light";
+      document.body.classList.toggle("light", isLight);
+      localStorage.setItem("waxalert_theme", isLight ? "light" : "dark");
+
+      // icon shows the *current* mode (sun for light, moon for dark)
+      btnTheme.innerHTML = isLight ? iconSun() : iconMoon();
+
+      // update theme-color meta (helps mobile browser UI)
+      if (themeMeta) themeMeta.setAttribute("content", isLight ? "#ffffff" : "#0b0b0b");
+    }
+
+    // default dark, but remember preference
+    const savedTheme = localStorage.getItem("waxalert_theme");
+    applyTheme(savedTheme === "light" ? "light" : "dark");
+
+    btnTheme.addEventListener("click", () => {
+      const next = document.body.classList.contains("light") ? "dark" : "light";
+      applyTheme(next);
+    });
+
+    // ----- APP LOGIC -----
     function normalize(s){ return String(s||"").toLowerCase(); }
     function escapeHTML(s){
       return String(s ?? "").replace(/[&<>"']/g, m => ({
@@ -393,7 +520,6 @@
       }
     });
 
-    // v20: Clear button behavior
     btnClear.addEventListener("click", () => {
       qInput.value = "";
       suggestionsEl.innerHTML = "";
