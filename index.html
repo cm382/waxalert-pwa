@@ -1,39 +1,280 @@
-// WaxAlert Service Worker (V9)
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WaxAlert</title>
 
-const CACHE = "waxalert-v9";
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#0b0b0b">
 
-const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/manifest.webmanifest",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png"
-];
+  <style>
+    :root { --navH: 62px; --radius: 14px; }
+    html, body { height: 100%; }
+    body { margin:0; font-family:Arial,sans-serif; background:#0b0b0b; color:#fff; }
+    .content { padding:16px 16px calc(var(--navH) + 18px); max-width:900px; margin:0 auto; }
+    .row { display:flex; gap:10px; align-items:center; }
+    .card { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:14px; }
+    h2 { margin:0 0 10px; font-size:20px; }
+    .muted { opacity:.8; font-size:13px; line-height:1.35; }
+    .small { opacity:.7; font-size:12px; }
+    .spacer { height:12px; }
 
-self.addEventListener("install", e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(APP_SHELL)));
-});
+    input {
+      width:100%;
+      box-sizing:border-box;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:#111;
+      color:#fff;
+      font-size:16px;
+      outline:none;
+    }
 
-self.addEventListener("activate", e => {
-  e.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => k !== CACHE ? caches.delete(k) : null));
-    await self.clients.claim();
-  })());
-});
+    button.primary {
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border:0;
+      border-radius:12px;
+      background:#fff;
+      color:#000;
+      font-weight:700;
+      cursor:pointer;
+    }
 
-self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  const url = new URL(e.request.url);
-  if (url.origin !== self.location.origin) return;
+    .list { margin-top:12px; display:grid; gap:10px; }
 
-  if (url.pathname === "/" || url.pathname === "/index.html") {
-    e.respondWith(fetch(e.request, { cache:"no-store" }));
-    return;
-  }
+    .suggestion { cursor:pointer; }
+    .suggestion .title { font-weight:700; }
+    .suggestion .meta { opacity:.8; font-size:12px; margin-top:4px; }
 
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
-  );
-});
+    .bottomNav {
+      position:fixed;
+      left:0; right:0; bottom:0;
+      height:var(--navH);
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      padding:10px 10px max(10px, env(safe-area-inset-bottom));
+      background:#0b0b0b;
+      border-top:1px solid rgba(255,255,255,0.12);
+      z-index:9999;
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    @media (min-width:900px){
+      .bottomNav { left:50%; transform:translateX(-50%); }
+    }
+
+    .navBtn {
+      border:0;
+      border-radius:var(--radius);
+      background:transparent;
+      color:#fff;
+      font-size:13px;
+      padding:10px 6px;
+      cursor:pointer;
+      opacity:.75;
+    }
+
+    .navBtn.active {
+      background:rgba(255,255,255,0.12);
+      opacity:1;
+    }
+
+    .view { display:none; }
+    .view.active { display:block; }
+
+    .kv {
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,0.10);
+    }
+    .kv:last-child { border-bottom:0; }
+    .k { opacity:.85; }
+    .v { font-weight:700; text-align:right; }
+  </style>
+</head>
+
+<body>
+  <main class="content">
+    <section class="view active" id="view-search">
+      <div class="card">
+        <div class="row" style="justify-content: space-between;">
+          <h2>WaxAlert</h2>
+          <div class="small" id="buildTag"></div>
+        </div>
+
+        <div class="muted">
+          Start typing. Tap a match to use the exact Products eBayURL (best results).
+        </div>
+
+        <div class="spacer"></div>
+
+        <input id="q" placeholder="Type: dune chrome hobby, topps chrome hobby, etc." />
+        <div class="list" id="suggestions"></div>
+
+        <button class="primary" id="btnSearch">Search</button>
+
+        <div class="spacer"></div>
+        <div class="small" id="selectedProduct"></div>
+      </div>
+
+      <div class="list" id="results"></div>
+    </section>
+
+    <section class="view" id="view-prices">
+      <div class="card">
+        <h2>Prices</h2>
+        <div class="muted">Next: Avg / Count / Low / High</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-alerts">
+      <div class="card">
+        <h2>Alerts</h2>
+        <div class="muted">Coming later</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-saved">
+      <div class="card">
+        <h2>Export Debug</h2>
+        <button class="primary" id="btnExport">Refresh Export</button>
+      </div>
+      <div class="list" id="exportView"></div>
+    </section>
+  </main>
+
+  <nav class="bottomNav">
+    <button class="navBtn active" data-target="view-search">Search</button>
+    <button class="navBtn" data-target="view-prices">Prices</button>
+    <button class="navBtn" data-target="view-alerts">Alerts</button>
+    <button class="navBtn" data-target="view-saved">Saved</button>
+  </nav>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
+    const APP_VERSION = "v9";
+    document.getElementById("buildTag").textContent = APP_VERSION;
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () =>
+        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+      );
+    }
+
+    const views = [...document.querySelectorAll(".view")];
+    const buttons = [...document.querySelectorAll(".navBtn")];
+
+    buttons.forEach(btn =>
+      btn.addEventListener("click", () => {
+        views.forEach(v => v.classList.toggle("active", v.id === btn.dataset.target));
+        buttons.forEach(b => b.classList.toggle("active", b === btn));
+      })
+    );
+
+    function normalize(s){ return String(s||"").toLowerCase(); }
+    function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+    const qInput = document.getElementById("q");
+    const suggestionsEl = document.getElementById("suggestions");
+    const resultsEl = document.getElementById("results");
+    const selectedEl = document.getElementById("selectedProduct");
+
+    let PRODUCT_CATALOG = [];
+    let SELECTED_PRODUCT = null;
+
+    function setSelectedProduct(p){
+      SELECTED_PRODUCT = p || null;
+      selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
+    }
+
+    function renderSuggestions(list){
+      suggestionsEl.innerHTML = list.slice(0,12).map(p => `
+        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
+          <div class="title">${escapeHTML(p.displayName)}</div>
+          <div class="meta">${escapeHTML(p.keywords || "")}</div>
+        </div>
+      `).join("");
+    }
+
+    function filterCatalog(q){
+      const tokens = normalize(q).split(/\s+/).filter(Boolean);
+      return PRODUCT_CATALOG.filter(p => {
+        const hay = normalize(p.displayName + " " + p.keywords + " " + p.code);
+        return tokens.every(t => hay.includes(t));
+      });
+    }
+
+    async function api(action,payload){
+      const r = await fetch(API_URL,{
+        method:"POST",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body:JSON.stringify({ action, payload })
+      });
+      return r.json();
+    }
+
+    async function loadCatalog(){
+      const data = await api("products",{});
+      PRODUCT_CATALOG = data.products || [];
+    }
+
+    async function runSearch(q,p){
+      const payload = { q };
+      if (p && p.ebayUrl){
+        payload.ebayUrl = p.ebayUrl;
+        payload.productCode = p.code;
+        payload.productName = p.displayName;
+      }
+      resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
+      const data = await api("search", payload);
+      resultsEl.innerHTML = data.exportData
+        ? `<div class="card">${data.exportData.map(r=>`${r[0]}: ${r[1]}`).join("<br>")}</div>`
+        : "";
+    }
+
+    qInput.addEventListener("input", () => {
+      setSelectedProduct(null);
+      renderSuggestions(filterCatalog(qInput.value));
+    });
+
+    suggestionsEl.addEventListener("click", e => {
+      const el = e.target.closest("[data-code]");
+      if (!el) return;
+      const p = PRODUCT_CATALOG.find(x => x.code === el.dataset.code);
+      if (!p) return;
+      setSelectedProduct(p);
+      qInput.value = p.displayName;
+      suggestionsEl.innerHTML = "";
+      if (p.ebayUrl) runSearch(p.displayName,p);
+    });
+
+    document.getElementById("btnSearch")
+      .addEventListener("click", () => runSearch(qInput.value, SELECTED_PRODUCT));
+
+    qInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") runSearch(qInput.value, SELECTED_PRODUCT);
+    });
+
+    document.getElementById("btnExport")
+      .addEventListener("click", async () => {
+        const d = await api("export",{});
+        document.getElementById("exportView").innerHTML =
+          `<div class="card">${JSON.stringify(d.exportData)}</div>`;
+      });
+
+    loadCatalog();
+  </script>
+</body>
+</html>
