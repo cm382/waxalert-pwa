@@ -53,13 +53,14 @@
     .suggestion { cursor:pointer; }
     .suggestion .title { font-weight:700; }
 
+    /* Bottom nav (single Home icon) */
     .bottomNav {
       position:fixed;
       left:0; right:0; bottom:0;
       height:var(--navH);
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       padding:10px 10px max(10px, env(safe-area-inset-bottom));
       background:#0b0b0b;
       border-top:1px solid rgba(255,255,255,0.12);
@@ -73,19 +74,27 @@
     }
 
     .navBtn {
+      width:48px;
+      height:48px;
       border:0;
-      border-radius:var(--radius);
-      background:transparent;
+      border-radius:16px;
+      background:rgba(255,255,255,0.10);
       color:#fff;
-      font-size:13px;
-      padding:10px 6px;
       cursor:pointer;
-      opacity:.75;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:.95;
     }
 
     .navBtn.active {
-      background:rgba(255,255,255,0.12);
-      opacity:1;
+      background:rgba(255,255,255,0.16);
+    }
+
+    .navIcon {
+      width:22px;
+      height:22px;
+      display:block;
     }
 
     .view { display:none; }
@@ -130,40 +139,23 @@
 
       <div class="list" id="results"></div>
     </section>
-
-    <section class="view" id="view-prices">
-      <div class="card">
-        <h2>Prices</h2>
-        <div class="muted">Next: Avg / Count / Low / High</div>
-      </div>
-    </section>
-
-    <section class="view" id="view-alerts">
-      <div class="card">
-        <h2>Alerts</h2>
-        <div class="muted">Coming later</div>
-      </div>
-    </section>
-
-    <section class="view" id="view-saved">
-      <div class="card">
-        <h2>Export Debug</h2>
-        <button class="primary" id="btnExport">Refresh Export</button>
-      </div>
-      <div class="list" id="exportView"></div>
-    </section>
   </main>
 
-  <nav class="bottomNav">
-    <button class="navBtn active" data-target="view-search">Search</button>
-    <button class="navBtn" data-target="view-prices">Prices</button>
-    <button class="navBtn" data-target="view-alerts">Alerts</button>
-    <button class="navBtn" data-target="view-saved">Saved</button>
+  <!-- v13: single Home button -->
+  <nav class="bottomNav" aria-label="Primary">
+    <button class="navBtn active" id="btnHome" aria-label="Home">
+      <!-- Simple “home” icon (inline SVG) -->
+      <svg class="navIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 9.8V21h14V9.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 21v-7h4v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </nav>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v12";
+    const APP_VERSION = "v13";
     document.getElementById("buildTag").textContent = APP_VERSION;
 
     if ("serviceWorker" in navigator) {
@@ -172,15 +164,12 @@
       );
     }
 
-    const views = [...document.querySelectorAll(".view")];
-    const buttons = [...document.querySelectorAll(".navBtn")];
-    buttons.forEach(btn =>
-      btn.addEventListener("click", () => {
-        views.forEach(v => v.classList.toggle("active", v.id === btn.dataset.target));
-        buttons.forEach(b => b.classList.toggle("active", b === btn));
-        window.scrollTo({ top: 0, behavior: "instant" });
-      })
-    );
+    // v13: Home button just scrolls to top and ensures Search view is active
+    const homeBtn = document.getElementById("btnHome");
+    homeBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      // (Search is the only view right now, so no view switching needed.)
+    });
 
     function normalize(s){ return String(s||"").toLowerCase(); }
     function escapeHTML(s){
@@ -193,7 +182,6 @@
     const suggestionsEl = document.getElementById("suggestions");
     const resultsEl = document.getElementById("results");
     const selectedEl = document.getElementById("selectedProduct");
-    const exportEl = document.getElementById("exportView");
 
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
@@ -203,7 +191,7 @@
       selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
     }
 
-    // v12: suggestions show ONLY the product displayName (no keywords)
+    // Suggestions show ONLY display name (no keywords shown)
     function renderSuggestions(list){
       if (!list.length) { suggestionsEl.innerHTML = ""; return; }
       suggestionsEl.innerHTML = list.slice(0,12).map(p => `
@@ -312,16 +300,6 @@
 
     qInput.addEventListener("keydown", e => {
       if (e.key === "Enter") runSearch(qInput.value, SELECTED_PRODUCT);
-    });
-
-    document.getElementById("btnExport").addEventListener("click", async () => {
-      exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
-      const d = await api("export",{});
-      if (!d || !d.ok) {
-        exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((d && d.error) ? d.error : "Unknown error")}</div></div>`;
-        return;
-      }
-      exportEl.innerHTML = exportCardHTML(d.exportData);
     });
 
     loadCatalog();
