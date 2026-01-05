@@ -102,7 +102,6 @@
     .kv:last-child { border-bottom:0; }
     .k { opacity:.85; }
     .v { font-weight:700; text-align:right; }
-    a { color:#fff; }
   </style>
 </head>
 
@@ -150,7 +149,6 @@
     <section class="view" id="view-saved">
       <div class="card">
         <h2>Export Debug</h2>
-        <div class="muted">Pulls current Export!A1:B20 without running a new search.</div>
         <button class="primary" id="btnExport">Refresh Export</button>
       </div>
       <div class="list" id="exportView"></div>
@@ -166,12 +164,12 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v10";
+    const APP_VERSION = "v11";
     document.getElementById("buildTag").textContent = APP_VERSION;
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () =>
-        navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(APP_VERSION)}`)
+        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
       );
     }
 
@@ -238,13 +236,12 @@
       }
     }
 
-    function exportCardHTML(exportData, ebaySoldUrl){
+    function exportCardHTML(exportData){
       const rows = Array.isArray(exportData) ? exportData : [];
-
       const cleaned = rows
         .filter(r => Array.isArray(r))
         .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
-        .filter(([k,v]) => k || v); // remove empty rows that were showing ":" lines
+        .filter(([k,v]) => k || v);
 
       const kvs = cleaned.map(([k,v]) => `
         <div class="kv">
@@ -253,15 +250,9 @@
         </div>
       `).join("");
 
-      const link = ebaySoldUrl ? `
-        <div class="spacer"></div>
-        <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
-      ` : "";
-
       return `
         <div class="card">
           ${kvs || `<div class="muted">No data returned yet.</div>`}
-          ${link}
         </div>
       `;
     }
@@ -276,7 +267,6 @@
       if (!q && !(p && p.ebayUrl)) return;
 
       const payload = { q: q || (p ? p.displayName : "") };
-
       if (p && p.ebayUrl){
         payload.ebayUrl = p.ebayUrl;
         payload.productCode = p.code;
@@ -284,7 +274,6 @@
       }
 
       resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
-
       const data = await api("search", payload);
 
       if (!data || !data.ok){
@@ -292,13 +281,12 @@
           <div class="card">
             <b>Error</b>
             <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-            ${data && data.preview ? `<div class="small" style="margin-top:8px;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
           </div>
         `;
         return;
       }
 
-      resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl || "");
+      resultsEl.innerHTML = exportCardHTML(data.exportData);
     }
 
     qInput.addEventListener("input", () => {
@@ -334,10 +322,11 @@
         exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((d && d.error) ? d.error : "Unknown error")}</div></div>`;
         return;
       }
-      exportEl.innerHTML = exportCardHTML(d.exportData, "");
+      exportEl.innerHTML = exportCardHTML(d.exportData);
     });
 
     loadCatalog();
   </script>
 </body>
 </html>
+
