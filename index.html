@@ -102,6 +102,7 @@
     .kv:last-child { border-bottom:0; }
     .k { opacity:.85; }
     .v { font-weight:700; text-align:right; }
+    a { color:#fff; }
   </style>
 </head>
 
@@ -149,6 +150,7 @@
     <section class="view" id="view-saved">
       <div class="card">
         <h2>Export Debug</h2>
+        <div class="muted">Pulls current Export!A1:B20 without running a new search.</div>
         <button class="primary" id="btnExport">Refresh Export</button>
       </div>
       <div class="list" id="exportView"></div>
@@ -164,32 +166,37 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v9";
+    const APP_VERSION = "v10";
     document.getElementById("buildTag").textContent = APP_VERSION;
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () =>
-        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
+        navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(APP_VERSION)}`)
       );
     }
 
     const views = [...document.querySelectorAll(".view")];
     const buttons = [...document.querySelectorAll(".navBtn")];
-
     buttons.forEach(btn =>
       btn.addEventListener("click", () => {
         views.forEach(v => v.classList.toggle("active", v.id === btn.dataset.target));
         buttons.forEach(b => b.classList.toggle("active", b === btn));
+        window.scrollTo({ top: 0, behavior: "instant" });
       })
     );
 
     function normalize(s){ return String(s||"").toLowerCase(); }
-    function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+    function escapeHTML(s){
+      return String(s ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+    }
 
     const qInput = document.getElementById("q");
     const suggestionsEl = document.getElementById("suggestions");
     const resultsEl = document.getElementById("results");
     const selectedEl = document.getElementById("selectedProduct");
+    const exportEl = document.getElementById("exportView");
 
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
@@ -200,6 +207,7 @@
     }
 
     function renderSuggestions(list){
+      if (!list.length) { suggestionsEl.innerHTML = ""; return; }
       suggestionsEl.innerHTML = list.slice(0,12).map(p => `
         <div class="card suggestion" data-code="${escapeHTML(p.code)}">
           <div class="title">${escapeHTML(p.displayName)}</div>
@@ -210,8 +218,9 @@
 
     function filterCatalog(q){
       const tokens = normalize(q).split(/\s+/).filter(Boolean);
+      if (!tokens.length) return [];
       return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize(p.displayName + " " + p.keywords + " " + p.code);
+        const hay = normalize((p.displayName||"") + " " + (p.keywords||"") + " " + (p.code||""));
         return tokens.every(t => hay.includes(t));
       });
     }
@@ -222,26 +231,74 @@
         headers:{ "Content-Type":"text/plain;charset=utf-8" },
         body:JSON.stringify({ action, payload })
       });
-      return r.json();
+      const text = await r.text();
+      try { return JSON.parse(text); }
+      catch (e) {
+        return { ok:false, error:"Non-JSON response from API", status:r.status, preview:text.slice(0, 300) };
+      }
+    }
+
+    function exportCardHTML(exportData, ebaySoldUrl){
+      const rows = Array.isArray(exportData) ? exportData : [];
+
+      const cleaned = rows
+        .filter(r => Array.isArray(r))
+        .map(r => [String(r[0] ?? "").trim(), String(r[1] ?? "").trim()])
+        .filter(([k,v]) => k || v); // remove empty rows that were showing ":" lines
+
+      const kvs = cleaned.map(([k,v]) => `
+        <div class="kv">
+          <div class="k">${escapeHTML(k)}</div>
+          <div class="v">${escapeHTML(v)}</div>
+        </div>
+      `).join("");
+
+      const link = ebaySoldUrl ? `
+        <div class="spacer"></div>
+        <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
+      ` : "";
+
+      return `
+        <div class="card">
+          ${kvs || `<div class="muted">No data returned yet.</div>`}
+          ${link}
+        </div>
+      `;
     }
 
     async function loadCatalog(){
       const data = await api("products",{});
-      PRODUCT_CATALOG = data.products || [];
+      PRODUCT_CATALOG = (data && data.ok && Array.isArray(data.products)) ? data.products : [];
     }
 
     async function runSearch(q,p){
-      const payload = { q };
+      q = String(q||"").trim();
+      if (!q && !(p && p.ebayUrl)) return;
+
+      const payload = { q: q || (p ? p.displayName : "") };
+
       if (p && p.ebayUrl){
         payload.ebayUrl = p.ebayUrl;
         payload.productCode = p.code;
         payload.productName = p.displayName;
       }
+
       resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
+
       const data = await api("search", payload);
-      resultsEl.innerHTML = data.exportData
-        ? `<div class="card">${data.exportData.map(r=>`${r[0]}: ${r[1]}`).join("<br>")}</div>`
-        : "";
+
+      if (!data || !data.ok){
+        resultsEl.innerHTML = `
+          <div class="card">
+            <b>Error</b>
+            <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
+            ${data && data.preview ? `<div class="small" style="margin-top:8px;white-space:pre-wrap">${escapeHTML(data.preview)}</div>` : ""}
+          </div>
+        `;
+        return;
+      }
+
+      resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl || "");
     }
 
     qInput.addEventListener("input", () => {
@@ -252,27 +309,33 @@
     suggestionsEl.addEventListener("click", e => {
       const el = e.target.closest("[data-code]");
       if (!el) return;
-      const p = PRODUCT_CATALOG.find(x => x.code === el.dataset.code);
+      const p = PRODUCT_CATALOG.find(x => String(x.code) === String(el.dataset.code));
       if (!p) return;
+
       setSelectedProduct(p);
       qInput.value = p.displayName;
       suggestionsEl.innerHTML = "";
-      if (p.ebayUrl) runSearch(p.displayName,p);
+
+      if (p.ebayUrl) runSearch(p.displayName, p);
     });
 
-    document.getElementById("btnSearch")
-      .addEventListener("click", () => runSearch(qInput.value, SELECTED_PRODUCT));
+    document.getElementById("btnSearch").addEventListener("click", () => {
+      runSearch(qInput.value, SELECTED_PRODUCT);
+    });
 
     qInput.addEventListener("keydown", e => {
       if (e.key === "Enter") runSearch(qInput.value, SELECTED_PRODUCT);
     });
 
-    document.getElementById("btnExport")
-      .addEventListener("click", async () => {
-        const d = await api("export",{});
-        document.getElementById("exportView").innerHTML =
-          `<div class="card">${JSON.stringify(d.exportData)}</div>`;
-      });
+    document.getElementById("btnExport").addEventListener("click", async () => {
+      exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
+      const d = await api("export",{});
+      if (!d || !d.ok) {
+        exportEl.innerHTML = `<div class="card"><b>Error</b><div class="muted">${escapeHTML((d && d.error) ? d.error : "Unknown error")}</div></div>`;
+        return;
+      }
+      exportEl.innerHTML = exportCardHTML(d.exportData, "");
+    });
 
     loadCatalog();
   </script>
