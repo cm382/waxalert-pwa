@@ -23,20 +23,82 @@
     .muted { opacity:.8; font-size:13px; line-height:1.35; }
     .small { opacity:.7; font-size:12px; }
     .spacer { height:12px; }
-    input { width:100%; box-sizing:border-box; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.16); background:#111; color:#fff; font-size:16px; outline:none; }
-    button.primary { width:100%; margin-top:10px; padding:12px; border:0; border-radius:12px; background:#fff; color:#000; font-weight:700; cursor:pointer; }
-    button.ghost { width:100%; margin-top:10px; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.20); background:transparent; color:#fff; cursor:pointer; }
+
+    input {
+      width:100%;
+      box-sizing:border-box;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:#111;
+      color:#fff;
+      font-size:16px;
+      outline:none;
+    }
+
+    button.primary {
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border:0;
+      border-radius:12px;
+      background:#fff;
+      color:#000;
+      font-weight:700;
+      cursor:pointer;
+    }
+
     .list { margin-top:12px; display:grid; gap:10px; }
+
     .suggestion { cursor:pointer; }
     .suggestion .title { font-weight:700; }
     .suggestion .meta { opacity:.8; font-size:12px; margin-top:4px; }
-    .bottomNav { position:fixed; left:0; right:0; bottom:0; height:var(--navH); display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:10px 10px max(10px, env(safe-area-inset-bottom)); background:#0b0b0b; border-top:1px solid rgba(255,255,255,0.12); z-index:9999; max-width:900px; margin:0 auto; }
-    @media (min-width:900px){ .bottomNav{ left:50%; transform:translateX(-50%);} }
-    .navBtn { border:0; border-radius:var(--radius); background:transparent; color:#fff; font-size:13px; padding:10px 6px; cursor:pointer; opacity:.75; }
-    .navBtn.active { background:rgba(255,255,255,0.12); opacity:1; }
+
+    .bottomNav {
+      position:fixed;
+      left:0; right:0; bottom:0;
+      height:var(--navH);
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      padding:10px 10px max(10px, env(safe-area-inset-bottom));
+      background:#0b0b0b;
+      border-top:1px solid rgba(255,255,255,0.12);
+      z-index:9999;
+      max-width:900px;
+      margin:0 auto;
+    }
+
+    @media (min-width:900px){
+      .bottomNav { left:50%; transform:translateX(-50%); }
+    }
+
+    .navBtn {
+      border:0;
+      border-radius:var(--radius);
+      background:transparent;
+      color:#fff;
+      font-size:13px;
+      padding:10px 6px;
+      cursor:pointer;
+      opacity:.75;
+    }
+
+    .navBtn.active {
+      background:rgba(255,255,255,0.12);
+      opacity:1;
+    }
+
     .view { display:none; }
     .view.active { display:block; }
-    .kv { display:grid; grid-template-columns:1fr auto; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.10); }
+
+    .kv {
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,0.10);
+    }
     .kv:last-child { border-bottom:0; }
     .k { opacity:.85; }
     .v { font-weight:700; text-align:right; }
@@ -64,10 +126,8 @@
         <div class="list" id="suggestions"></div>
 
         <button class="primary" id="btnSearch">Search</button>
-        <button class="ghost" id="btnLast">Use last query</button>
 
         <div class="spacer"></div>
-        <div class="small" id="lastQuery"></div>
         <div class="small" id="selectedProduct"></div>
       </div>
 
@@ -77,28 +137,27 @@
     <section class="view" id="view-prices">
       <div class="card">
         <h2>Prices</h2>
-        <div class="muted">Next: map Export rows into a cleaner “Avg / Count / Low / High” layout.</div>
+        <div class="muted">Next: Avg / Count / Low / High</div>
       </div>
     </section>
 
     <section class="view" id="view-alerts">
       <div class="card">
         <h2>Alerts</h2>
-        <div class="muted">Later: track + notify when under $X (Sheets + Apps Script trigger).</div>
+        <div class="muted">Coming later</div>
       </div>
     </section>
 
     <section class="view" id="view-saved">
       <div class="card">
         <h2>Export Debug</h2>
-        <div class="muted">Pulls current Export!A1:B20 without running a new search.</div>
         <button class="primary" id="btnExport">Refresh Export</button>
       </div>
       <div class="list" id="exportView"></div>
     </section>
   </main>
 
-  <nav class="bottomNav" aria-label="Primary">
+  <nav class="bottomNav">
     <button class="navBtn active" data-target="view-search">Search</button>
     <button class="navBtn" data-target="view-prices">Prices</button>
     <button class="navBtn" data-target="view-alerts">Alerts</button>
@@ -106,204 +165,125 @@
   </nav>
 
   <script>
-    // ---------------- CONFIG ----------------
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v7";
+    const APP_VERSION = "v8";
     document.getElementById("buildTag").textContent = APP_VERSION;
 
-    // ---------------- PWA SERVICE WORKER ----------------
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () =>
-        navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(APP_VERSION)}`)
+        navigator.serviceWorker.register(`/sw.js?v=${APP_VERSION}`)
       );
     }
 
-    // ---------------- NAV ----------------
-    const buttons = [...document.querySelectorAll(".navBtn")];
     const views = [...document.querySelectorAll(".view")];
-    function showView(id) {
-      views.forEach(v => v.classList.toggle("active", v.id === id));
-      buttons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
-    buttons.forEach(btn => btn.addEventListener("click", () => showView(btn.dataset.target)));
+    const buttons = [...document.querySelectorAll(".navBtn")];
+    buttons.forEach(btn =>
+      btn.addEventListener("click", () => {
+        views.forEach(v => v.classList.toggle("active", v.id === btn.dataset.target));
+        buttons.forEach(b => b.classList.toggle("active", b === btn));
+      })
+    );
 
-    // ---------------- HELPERS ----------------
     function escapeHTML(s){
       return String(s).replace(/[&<>"']/g, m => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[m]));
     }
-    function normalize(s) { return String(s || "").toLowerCase(); }
 
+    function normalize(s){ return String(s||"").toLowerCase(); }
+
+    const qInput = document.getElementById("q");
+    const suggestionsEl = document.getElementById("suggestions");
+    const resultsEl = document.getElementById("results");
+    const selectedEl = document.getElementById("selectedProduct");
     const catalogStatusEl = document.getElementById("catalogStatus");
-    function setCatalogStatus(msg){ catalogStatusEl.textContent = msg || ""; }
-
-    function setLastQuery(q) {
-      localStorage.setItem("waxalert_last_query", q);
-      document.getElementById("lastQuery").textContent = q ? ("Last query: " + q) : "";
-    }
-    function getLastQuery() { return localStorage.getItem("waxalert_last_query") || ""; }
-    setLastQuery(getLastQuery());
-
-    async function api(action, payload) {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, payload })
-      });
-      const text = await res.text();
-      try { return JSON.parse(text); }
-      catch (e) {
-        return { ok:false, error:"Non-JSON response from API", status:res.status, preview:text.slice(0, 300) };
-      }
-    }
-
-    function exportCardHTML(exportData, ebaySoldUrl) {
-      const rows = Array.isArray(exportData) ? exportData : [];
-      const cleaned = rows
-        .filter(r => r && (String(r[0] || "").trim() || String(r[1] || "").trim()))
-        .map(r => [String(r[0] || "").trim(), String(r[1] || "").trim()]);
-
-      const kvs = cleaned.map(([k,v]) => `
-        <div class="kv">
-          <div class="k">${escapeHTML(k || "")}</div>
-          <div class="v">${escapeHTML(v || "")}</div>
-        </div>
-      `).join("");
-
-      const link = ebaySoldUrl ? `
-        <div class="spacer"></div>
-        <div class="small"><a href="${escapeHTML(ebaySoldUrl)}" target="_blank" rel="noopener">Open eBay sold search</a></div>
-      ` : "";
-
-      return `<div class="card">${kvs || `<div class="muted">No export data returned yet.</div>`}${link}</div>`;
-    }
 
     let PRODUCT_CATALOG = [];
     let SELECTED_PRODUCT = null;
 
-    const suggestionsEl = document.getElementById("suggestions");
-    const selectedEl = document.getElementById("selectedProduct");
-
-    function setSelectedProduct(p) {
+    function setSelectedProduct(p){
       SELECTED_PRODUCT = p || null;
-      selectedEl.textContent = SELECTED_PRODUCT
-        ? ("Selected: " + SELECTED_PRODUCT.displayName + " (" + SELECTED_PRODUCT.code + ")")
-        : "";
+      selectedEl.textContent = p ? `Selected: ${p.displayName}` : "";
     }
 
-    function renderSuggestions(list) {
-      suggestionsEl.innerHTML = list.length
-        ? list.slice(0, 12).map(p => `
-            <div class="card suggestion" data-code="${escapeHTML(p.code)}">
-              <div class="title">${escapeHTML(p.displayName)}</div>
-              <div class="meta">${escapeHTML(p.keywords || p.code)}</div>
-            </div>
-          `).join("")
-        : "";
+    function renderSuggestions(list){
+      suggestionsEl.innerHTML = list.slice(0,12).map(p => `
+        <div class="card suggestion" data-code="${escapeHTML(p.code)}">
+          <div class="title">${escapeHTML(p.displayName)}</div>
+          <div class="meta">${escapeHTML(p.keywords || "")}</div>
+        </div>
+      `).join("");
     }
 
-    function filterCatalog(q) {
-      const t = normalize(q).trim();
-      if (!t) return [];
-      const tokens = t.split(/\s+/).filter(Boolean);
+    function filterCatalog(q){
+      const tokens = normalize(q).split(/\s+/).filter(Boolean);
       return PRODUCT_CATALOG.filter(p => {
-        const hay = normalize(p.displayName) + " " + normalize(p.keywords) + " " + normalize(p.code);
-        return tokens.every(tok => hay.includes(tok));
+        const hay = normalize(p.displayName + " " + p.keywords + " " + p.code);
+        return tokens.every(t => hay.includes(t));
       });
     }
 
-    async function loadCatalog() {
-      setCatalogStatus("Catalog: loading…");
-
-      const data = await api("products", {});
-      if (!data || !data.ok || !Array.isArray(data.products)) {
-        setCatalogStatus(`Catalog error: ${escapeHTML((data && data.error) ? data.error : "unknown")}`);
-        console.log("products() response:", data);
-        PRODUCT_CATALOG = [];
-        return;
-      }
-
-      PRODUCT_CATALOG = data.products;
-      setCatalogStatus(`Catalog: ${PRODUCT_CATALOG.length} (live)`);
-
-      const current = qInput.value.trim();
-      if (current) renderSuggestions(filterCatalog(current));
+    async function api(action,payload){
+      const r = await fetch(API_URL,{
+        method:"POST",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body:JSON.stringify({ action, payload })
+      });
+      return r.json();
     }
 
-    const qInput = document.getElementById("q");
-    const resultsEl = document.getElementById("results");
+    async function loadCatalog(){
+      catalogStatusEl.textContent = "Catalog: loading…";
+      const data = await api("products",{});
+      PRODUCT_CATALOG = data.products || [];
+      catalogStatusEl.textContent = `Catalog: ${PRODUCT_CATALOG.length}`;
+    }
 
-    async function runSearch(q, selectedProduct) {
-      q = String(q || "").trim();
-      if (!q && !(selectedProduct && selectedProduct.ebayUrl)) return;
-
-      setLastQuery(q || (selectedProduct ? selectedProduct.displayName : ""));
+    async function runSearch(q, p){
+      const payload = { q };
+      if (p && p.ebayUrl){
+        payload.ebayUrl = p.ebayUrl;
+        payload.productCode = p.code;
+        payload.productName = p.displayName;
+      }
       resultsEl.innerHTML = `<div class="card"><div class="muted">Searching…</div></div>`;
-
-      const payload = { q: q || (selectedProduct ? selectedProduct.displayName : "") };
-
-      if (selectedProduct && selectedProduct.ebayUrl) {
-        payload.ebayUrl = selectedProduct.ebayUrl;
-        payload.productCode = selectedProduct.code;
-        payload.productName = selectedProduct.displayName;
-      }
-
       const data = await api("search", payload);
-      if (!data || !data.ok) {
-        resultsEl.innerHTML = `
-          <div class="card">
-            <b>Error</b>
-            <div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div>
-          </div>
-        `;
-        return;
-      }
-
-      resultsEl.innerHTML = exportCardHTML(data.exportData, data.ebaySoldUrl);
+      resultsEl.innerHTML = data.exportData
+        ? `<div class="card">${data.exportData.map(r=>`${r[0]}: ${r[1]}`).join("<br>")}</div>`
+        : "";
     }
 
     qInput.addEventListener("input", () => {
       setSelectedProduct(null);
-      renderSuggestions(filterCatalog(qInput.value.trim()));
+      renderSuggestions(filterCatalog(qInput.value));
     });
 
-    suggestionsEl.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-code]");
-      if (!card) return;
-      const code = card.getAttribute("data-code");
-      const product = PRODUCT_CATALOG.find(p => p.code === code);
-      if (!product) return;
-
-      setSelectedProduct(product);
-      qInput.value = product.displayName;
+    suggestionsEl.addEventListener("click", e => {
+      const el = e.target.closest("[data-code]");
+      if (!el) return;
+      const p = PRODUCT_CATALOG.find(x => x.code === el.dataset.code);
+      if (!p) return;
+      setSelectedProduct(p);
+      qInput.value = p.displayName;
       suggestionsEl.innerHTML = "";
-
-      if (product.ebayUrl) runSearch(product.displayName, product);
+      if (p.ebayUrl) runSearch(p.displayName, p);
     });
 
-    document.getElementById("btnSearch").addEventListener("click", () => runSearch(qInput.value.trim(), SELECTED_PRODUCT));
-    document.getElementById("btnLast").addEventListener("click", () => {
-      const q = getLastQuery();
-      if (q) { qInput.value = q; runSearch(q, null); }
+    document.getElementById("btnSearch")
+      .addEventListener("click", () => runSearch(qInput.value, SELECTED_PRODUCT));
+
+    qInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") runSearch(qInput.value, SELECTED_PRODUCT);
     });
 
-    qInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") runSearch(qInput.value.trim(), SELECTED_PRODUCT);
-    });
-
-    const exportEl = document.getElementById("exportView");
-    document.getElementById("btnExport").addEventListener("click", async () => {
-      exportEl.innerHTML = `<div class="card"><div class="muted">Loading Export…</div></div>`;
-      const data = await api("export", {});
-      exportEl.innerHTML = (data && data.ok)
-        ? exportCardHTML(data.exportData, "")
-        : `<div class="card"><b>Error</b><div class="muted">${escapeHTML((data && data.error) ? data.error : "Unknown error")}</div></div>`;
-    });
+    document.getElementById("btnExport")
+      .addEventListener("click", async () => {
+        const d = await api("export",{});
+        document.getElementById("exportView").innerHTML =
+          `<div class="card">${JSON.stringify(d.exportData)}</div>`;
+      });
 
     loadCatalog();
   </script>
 </body>
 </html>
-
