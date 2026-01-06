@@ -51,7 +51,10 @@
 
       --kvBorder:rgba(255,255,255,0.10);
 
-      --outlineBlue: var(--accentBlue);
+      /* v22+ checklist button should MATCH primary button in each mode */
+      --btnChecklistBg: var(--btnPrimaryBg);
+      --btnChecklistText: var(--btnPrimaryText);
+      --btnChecklistBorder: transparent;
     }
 
     body.light{
@@ -79,7 +82,10 @@
 
       --kvBorder:rgba(0,0,0,0.10);
 
-      --outlineBlue: var(--accentBlue);
+      /* v22+ checklist button should MATCH primary button in each mode */
+      --btnChecklistBg: var(--btnPrimaryBg);
+      --btnChecklistText: var(--btnPrimaryText);
+      --btnChecklistBorder: transparent;
     }
 
     html, body { height:100%; }
@@ -212,18 +218,18 @@
       transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
     }
 
-    /* v22 checklist button */
+    /* UPDATED checklist button: matches primary button colors in each mode */
     button.checklistBtn{
       width:100%;
       margin-top:10px;
       padding: 12px;
       border-radius: 12px;
-      background: transparent;
-      color: var(--outlineBlue);
-      border: 1.5px solid var(--outlineBlue);
+      background: var(--btnChecklistBg);
+      color: var(--btnChecklistText);
+      border: 0;
       font-weight:700;
       cursor:pointer;
-      transition: opacity 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
+      transition: opacity 160ms ease, background 160ms ease, color 160ms ease;
     }
     button.checklistBtn:hover{ opacity: 0.92; }
 
@@ -530,7 +536,7 @@
       if (!safe) return "";
       return `
         <button class="checklistBtn" type="button" id="btnChecklist">
-          See Checklists on ChasingMajors
+          ChasingMajors Checklist
         </button>
       `;
     }
@@ -609,18 +615,17 @@
         return;
       }
 
-      // v22: render results + checklist button (only if selected product has cmURL/checklistUrl)
-      const checklistUrl = (SELECTED_PRODUCT && (SELECTED_PRODUCT.checklistUrl || SELECTED_PRODUCT.cmUrl || SELECTED_PRODUCT.cmURL)) ? (SELECTED_PRODUCT.checklistUrl || SELECTED_PRODUCT.cmUrl || SELECTED_PRODUCT.cmURL) : "";
+      // show checklist button only if selected product has checklistUrl
+      const checklistUrl =
+        (SELECTED_PRODUCT && SELECTED_PRODUCT.checklistUrl)
+          ? String(SELECTED_PRODUCT.checklistUrl).trim()
+          : "";
+
       resultsEl.innerHTML = exportCardHTML(data.exportData) + (checklistUrl ? checklistButtonHTML(checklistUrl) : "");
 
-      // attach handler if button exists
       if (checklistUrl) {
         const btn = document.getElementById("btnChecklist");
-        if (btn) {
-          btn.addEventListener("click", () => {
-            window.open(checklistUrl, "_blank", "noopener");
-          });
-        }
+        if (btn) btn.addEventListener("click", () => window.open(checklistUrl, "_blank", "noopener"));
       }
     }
 
