@@ -50,6 +50,8 @@
       --navBtnIcon:#ffffff;
 
       --kvBorder:rgba(255,255,255,0.10);
+
+      --outlineBlue: var(--accentBlue);
     }
 
     body.light{
@@ -76,6 +78,8 @@
       --navBtnIcon:#ffffff;
 
       --kvBorder:rgba(0,0,0,0.10);
+
+      --outlineBlue: var(--accentBlue);
     }
 
     html, body { height:100%; }
@@ -208,6 +212,21 @@
       transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
     }
 
+    /* v22 checklist button */
+    button.checklistBtn{
+      width:100%;
+      margin-top:10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--outlineBlue);
+      border: 1.5px solid var(--outlineBlue);
+      font-weight:700;
+      cursor:pointer;
+      transition: opacity 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+    button.checklistBtn:hover{ opacity: 0.92; }
+
     .list{ margin-top: 12px; display:grid; gap: 10px; }
     .suggestion{ cursor:pointer; }
     .suggestion .title{ font-weight: 700; }
@@ -267,11 +286,7 @@
       display:block;
     }
 
-    /* ---------------- SPLASH OVERLAY (FIXED) ----------------
-      - No spinner
-      - No clipping: remove overflow hidden and add top padding
-      - Slightly reduced font sizes to keep ascenders (like T) safe
-    */
+    /* ---------------- SPLASH OVERLAY (no spinner, no clipping) ---------------- */
     .splash{
       position: fixed;
       inset: 0;
@@ -289,7 +304,7 @@
     .splashInner{
       text-align: center;
       width: min(520px, 92vw);
-      padding: 34px 18px 18px; /* extra top padding prevents any font top-crop */
+      padding: 34px 18px 18px;
       box-sizing: border-box;
       animation: splashIn 420ms ease forwards;
     }
@@ -297,7 +312,6 @@
       from{ opacity: 0; transform: translateY(14px); }
       to{ opacity: 1; transform: translateY(0); }
     }
-
     .splashTitle{
       font-family: "Bangers", cursive;
       font-size: 44px;
@@ -306,11 +320,8 @@
       margin: 0;
       position: relative;
       display: inline-block;
-      /* IMPORTANT: no overflow hidden so letters can't be clipped */
     }
     .splashTitle .big{ font-size: 56px; }
-
-    /* subtle shimmer */
     .splashTitle::after{
       content:"";
       position:absolute;
@@ -400,7 +411,7 @@
   <script>
     // ---------------- CONFIG ----------------
     const API_URL = "https://script.google.com/macros/s/AKfycbxN9m7gStD_HgnOGSfjJzp7T9GQiYVhlMItgo5_YzUFe3Vrwe_GOsTVD0pndnnhk7a2MA/exec";
-    const APP_VERSION = "v21.5";
+    const APP_VERSION = "v22";
 
     document.getElementById("versionTag").textContent = "Build " + APP_VERSION;
 
@@ -472,7 +483,6 @@
         setTimeout(() => splashEl.remove(), 320);
       }, wait);
     }
-
     setTimeout(hideSplash, 2500);
 
     // ---------------- HELPERS ----------------
@@ -513,6 +523,16 @@
       `).join("");
 
       return `<div class="card">${kvs}</div>`;
+    }
+
+    function checklistButtonHTML(url) {
+      const safe = String(url || "").trim();
+      if (!safe) return "";
+      return `
+        <button class="checklistBtn" type="button" id="btnChecklist">
+          See Checklists on ChasingMajors
+        </button>
+      `;
     }
 
     // ---------------- TYPEAHEAD CATALOG ----------------
@@ -589,7 +609,19 @@
         return;
       }
 
-      resultsEl.innerHTML = exportCardHTML(data.exportData);
+      // v22: render results + checklist button (only if selected product has cmURL/checklistUrl)
+      const checklistUrl = (SELECTED_PRODUCT && (SELECTED_PRODUCT.checklistUrl || SELECTED_PRODUCT.cmUrl || SELECTED_PRODUCT.cmURL)) ? (SELECTED_PRODUCT.checklistUrl || SELECTED_PRODUCT.cmUrl || SELECTED_PRODUCT.cmURL) : "";
+      resultsEl.innerHTML = exportCardHTML(data.exportData) + (checklistUrl ? checklistButtonHTML(checklistUrl) : "");
+
+      // attach handler if button exists
+      if (checklistUrl) {
+        const btn = document.getElementById("btnChecklist");
+        if (btn) {
+          btn.addEventListener("click", () => {
+            window.open(checklistUrl, "_blank", "noopener");
+          });
+        }
+      }
     }
 
     qInput.addEventListener("input", () => {
